@@ -55,32 +55,32 @@
     "bld_type"
    ],
    "stats": {
-    "n_urban": 5042,
-    "mean_dt_day": 1.4149,
-    "n_dt_day": 5042,
-    "mean_dt_night": 1.0924,
-    "n_dt_night": 4709,
-    "mean_utfvi": 0.0001,
-    "n_utfvi": 5042,
-    "mean_ndvi": 0.4244,
-    "n_ndvi": 5042,
+    "n_urban": 9203,
+    "mean_dt_day": 3.2392,
+    "n_dt_day": 9203,
+    "mean_dt_night": 0.9457,
+    "n_dt_night": 9203,
+    "mean_utfvi": 0.0,
+    "n_utfvi": 9203,
+    "mean_ndvi": 0.5596,
+    "n_ndvi": 9203,
     "share_utfvi": [
-     0.5413,
-     0.2527,
-     0.1456,
-     0.0476,
-     0.0109,
-     0.002
+     0.5525,
+     0.216,
+     0.1338,
+     0.0643,
+     0.0215,
+     0.0118
     ],
     "share_bld_type": [
-     0.198,
-     0.4636,
-     0.0353,
-     0.0275,
-     0.2756
+     0.1396,
+     0.5742,
+     0.0301,
+     0.0251,
+     0.231
     ]
    },
-   "synthetic": true
+   "synthetic": false
   },
   {
    "id": "kyiv",
@@ -137,32 +137,32 @@
     "bld_type"
    ],
    "stats": {
-    "n_urban": 42223,
-    "mean_dt_day": 1.1678,
-    "n_dt_day": 42223,
-    "mean_dt_night": 1.1079,
-    "n_dt_night": 38968,
-    "mean_utfvi": 0.0002,
-    "n_utfvi": 42223,
-    "mean_ndvi": 0.444,
-    "n_ndvi": 42223,
+    "n_urban": 57708,
+    "mean_dt_day": 2.802,
+    "n_dt_day": 57649,
+    "mean_dt_night": 1.6023,
+    "n_dt_night": 57708,
+    "mean_utfvi": -0.0,
+    "n_utfvi": 57649,
+    "mean_ndvi": 0.4897,
+    "n_ndvi": 57708,
     "share_utfvi": [
-     0.5548,
-     0.2766,
-     0.1053,
-     0.0416,
-     0.0155,
-     0.0062
+     0.5569,
+     0.1846,
+     0.1193,
+     0.0788,
+     0.0395,
+     0.0209
     ],
     "share_bld_type": [
-     0.2731,
-     0.3146,
-     0.1204,
-     0.0377,
-     0.2542
+     0.2237,
+     0.4081,
+     0.1011,
+     0.0332,
+     0.2338
     ]
    },
-   "synthetic": true
+   "synthetic": false
   },
   {
    "id": "lviv",
@@ -219,32 +219,32 @@
     "bld_type"
    ],
    "stats": {
-    "n_urban": 15340,
-    "mean_dt_day": 1.1042,
-    "n_dt_day": 15340,
-    "mean_dt_night": 1.0135,
-    "n_dt_night": 13918,
-    "mean_utfvi": 0.0001,
-    "n_utfvi": 15340,
-    "mean_ndvi": 0.4496,
-    "n_ndvi": 15340,
+    "n_urban": 19812,
+    "mean_dt_day": 2.9393,
+    "n_dt_day": 19811,
+    "mean_dt_night": 1.4129,
+    "n_dt_night": 19812,
+    "mean_utfvi": -0.0,
+    "n_utfvi": 19811,
+    "mean_ndvi": 0.5526,
+    "n_ndvi": 19812,
     "share_utfvi": [
-     0.5832,
-     0.242,
-     0.1027,
-     0.0387,
-     0.0196,
-     0.0138
+     0.5441,
+     0.2361,
+     0.1199,
+     0.0586,
+     0.025,
+     0.0163
     ],
     "share_bld_type": [
-     0.2076,
-     0.47,
-     0.0543,
-     0.0353,
-     0.2327
+     0.1549,
+     0.5689,
+     0.0448,
+     0.0304,
+     0.201
     ]
    },
-   "synthetic": true
+   "synthetic": false
   },
   {
    "id": "chernivtsi",
@@ -301,32 +301,32 @@
     "bld_type"
    ],
    "stats": {
-    "n_urban": 6159,
-    "mean_dt_day": 1.1112,
-    "n_dt_day": 6159,
-    "mean_dt_night": 0.997,
-    "n_dt_night": 5609,
-    "mean_utfvi": 0.0002,
-    "n_utfvi": 6159,
-    "mean_ndvi": 0.4483,
-    "n_ndvi": 6159,
+    "n_urban": 10070,
+    "mean_dt_day": 1.5384,
+    "n_dt_day": 10070,
+    "mean_dt_night": 0.6538,
+    "n_dt_night": 10070,
+    "mean_utfvi": 0.0,
+    "n_utfvi": 10070,
+    "mean_ndvi": 0.5757,
+    "n_ndvi": 10070,
     "share_utfvi": [
-     0.5895,
-     0.222,
-     0.1091,
-     0.0487,
-     0.0198,
-     0.0109
+     0.5246,
+     0.2697,
+     0.1321,
+     0.0456,
+     0.0184,
+     0.0096
     ],
     "share_bld_type": [
-     0.0808,
-     0.5881,
-     0.0197,
-     0.018,
-     0.2934
+     0.0581,
+     0.6749,
+     0.015,
+     0.0204,
+     0.2315
     ]
    },
-   "synthetic": true
+   "synthetic": false
   },
   {
    "id": "uzhhorod",
@@ -383,32 +383,32 @@
     "bld_type"
    ],
    "stats": {
-    "n_urban": 4186,
-    "mean_dt_day": 0.9003,
-    "n_dt_day": 4186,
-    "mean_dt_night": 0.966,
-    "n_dt_night": 4002,
-    "mean_utfvi": 0.0001,
-    "n_utfvi": 4186,
-    "mean_ndvi": 0.4659,
-    "n_ndvi": 4186,
+    "n_urban": 5273,
+    "mean_dt_day": 2.8097,
+    "n_dt_day": 5256,
+    "mean_dt_night": 1.3935,
+    "n_dt_night": 5273,
+    "mean_utfvi": 0.0,
+    "n_utfvi": 5256,
+    "mean_ndvi": 0.5613,
+    "n_ndvi": 5273,
     "share_utfvi": [
-     0.5645,
-     0.2831,
-     0.1075,
-     0.0303,
-     0.0108,
-     0.0038
+     0.558,
+     0.2473,
+     0.1136,
+     0.0538,
+     0.0164,
+     0.0108
     ],
     "share_bld_type": [
-     0.1017,
-     0.6017,
-     0.0839,
-     0.0144,
-     0.1983
+     0.0782,
+     0.6518,
+     0.0699,
+     0.0145,
+     0.1855
     ]
    },
-   "synthetic": true
+   "synthetic": false
   }
  ]
 }

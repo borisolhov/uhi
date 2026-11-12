@@ -2,7 +2,7 @@
 import json, sys, numpy as np, rasterio
 from rasterio.warp import transform
 sys.path.insert(0, 'scripts'); import prepare_web as pw
-pw.RAW = pw.ROOT / 'data/raw_synth'
+pw.RAW = pw.ROOT / ('data/raw_synth' if 'synth' in sys.argv else 'data/raw')
 rng = np.random.default_rng(7); out = []
 for cid in pw.CITIES:
     b, prof = pw.load_city(cid); t = prof['transform']; H, W = prof['height'], prof['width']
