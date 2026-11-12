@@ -1,0 +1,414 @@
+{
+ "cities": [
+  {
+   "id": "ivano_frankivsk",
+   "name": "Івано-Франківськ",
+   "grid": {
+    "crs": "EPSG:32635",
+    "proj4": "+proj=utm +zone=35 +datum=WGS84 +units=m +no_defs",
+    "x0": 322300.0,
+    "y0": 5431300.0,
+    "res": 100.0,
+    "width": 201,
+    "height": 201
+   },
+   "corners": [
+    [
+     24.569959,
+     49.014447
+    ],
+    [
+     24.852949,
+     49.014447
+    ],
+    [
+     24.852949,
+     48.828496
+    ],
+    [
+     24.569959,
+     48.828496
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type"
+   ],
+   "stats": {
+    "n_urban": 5042,
+    "mean_dt_day": 1.4149,
+    "n_dt_day": 5042,
+    "mean_dt_night": 1.0924,
+    "n_dt_night": 4709,
+    "mean_utfvi": 0.0001,
+    "n_utfvi": 5042,
+    "mean_ndvi": 0.4244,
+    "n_ndvi": 5042,
+    "share_utfvi": [
+     0.5413,
+     0.2527,
+     0.1456,
+     0.0476,
+     0.0109,
+     0.002
+    ],
+    "share_bld_type": [
+     0.198,
+     0.4636,
+     0.0353,
+     0.0275,
+     0.2756
+    ]
+   },
+   "synthetic": true
+  },
+  {
+   "id": "kyiv",
+   "name": "Київ",
+   "grid": {
+    "crs": "EPSG:32636",
+    "proj4": "+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs",
+    "x0": 302100.0,
+    "y0": 5613700.0,
+    "res": 100.0,
+    "width": 441,
+    "height": 441
+   },
+   "corners": [
+    [
+     30.200985,
+     50.654824
+    ],
+    [
+     30.842891,
+     50.654824
+    ],
+    [
+     30.842891,
+     50.245195
+    ],
+    [
+     30.200985,
+     50.245195
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type"
+   ],
+   "stats": {
+    "n_urban": 42223,
+    "mean_dt_day": 1.1678,
+    "n_dt_day": 42223,
+    "mean_dt_night": 1.1079,
+    "n_dt_night": 38968,
+    "mean_utfvi": 0.0002,
+    "n_utfvi": 42223,
+    "mean_ndvi": 0.444,
+    "n_ndvi": 42223,
+    "share_utfvi": [
+     0.5548,
+     0.2766,
+     0.1053,
+     0.0416,
+     0.0155,
+     0.0062
+    ],
+    "share_bld_type": [
+     0.2731,
+     0.3146,
+     0.1204,
+     0.0377,
+     0.2542
+    ]
+   },
+   "synthetic": true
+  },
+  {
+   "id": "lviv",
+   "name": "Львів",
+   "grid": {
+    "crs": "EPSG:32635",
+    "proj4": "+proj=utm +zone=35 +datum=WGS84 +units=m +no_defs",
+    "x0": 273500.0,
+    "y0": 5538100.0,
+    "res": 100.0,
+    "width": 261,
+    "height": 261
+   },
+   "corners": [
+    [
+     23.842406,
+     49.961566
+    ],
+    [
+     24.21988,
+     49.961566
+    ],
+    [
+     24.21988,
+     49.717223
+    ],
+    [
+     23.842406,
+     49.717223
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type"
+   ],
+   "stats": {
+    "n_urban": 15340,
+    "mean_dt_day": 1.1042,
+    "n_dt_day": 15340,
+    "mean_dt_night": 1.0135,
+    "n_dt_night": 13918,
+    "mean_utfvi": 0.0001,
+    "n_utfvi": 15340,
+    "mean_ndvi": 0.4496,
+    "n_ndvi": 15340,
+    "share_utfvi": [
+     0.5832,
+     0.242,
+     0.1027,
+     0.0387,
+     0.0196,
+     0.0138
+    ],
+    "share_bld_type": [
+     0.2076,
+     0.47,
+     0.0543,
+     0.0353,
+     0.2327
+    ]
+   },
+   "synthetic": true
+  },
+  {
+   "id": "chernivtsi",
+   "name": "Чернівці",
+   "grid": {
+    "crs": "EPSG:32635",
+    "proj4": "+proj=utm +zone=35 +datum=WGS84 +units=m +no_defs",
+    "x0": 412000.0,
+    "y0": 5358400.0,
+    "res": 100.0,
+    "width": 181,
+    "height": 181
+   },
+   "corners": [
+    [
+     25.811712,
+     48.374895
+    ],
+    [
+     26.058795,
+     48.374895
+    ],
+    [
+     26.058795,
+     48.209605
+    ],
+    [
+     25.811712,
+     48.209605
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type"
+   ],
+   "stats": {
+    "n_urban": 6159,
+    "mean_dt_day": 1.1112,
+    "n_dt_day": 6159,
+    "mean_dt_night": 0.997,
+    "n_dt_night": 5609,
+    "mean_utfvi": 0.0002,
+    "n_utfvi": 6159,
+    "mean_ndvi": 0.4483,
+    "n_ndvi": 6159,
+    "share_utfvi": [
+     0.5895,
+     0.222,
+     0.1091,
+     0.0487,
+     0.0198,
+     0.0109
+    ],
+    "share_bld_type": [
+     0.0808,
+     0.5881,
+     0.0197,
+     0.018,
+     0.2934
+    ]
+   },
+   "synthetic": true
+  },
+  {
+   "id": "uzhhorod",
+   "name": "Ужгород",
+   "grid": {
+    "crs": "EPSG:32634",
+    "proj4": "+proj=utm +zone=34 +datum=WGS84 +units=m +no_defs",
+    "x0": 586900.0,
+    "y0": 5394200.0,
+    "res": 100.0,
+    "width": 161,
+    "height": 161
+   },
+   "corners": [
+    [
+     22.17753,
+     48.694784
+    ],
+    [
+     22.399039,
+     48.694784
+    ],
+    [
+     22.399039,
+     48.54746
+    ],
+    [
+     22.17753,
+     48.54746
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type"
+   ],
+   "stats": {
+    "n_urban": 4186,
+    "mean_dt_day": 0.9003,
+    "n_dt_day": 4186,
+    "mean_dt_night": 0.966,
+    "n_dt_night": 4002,
+    "mean_utfvi": 0.0001,
+    "n_utfvi": 4186,
+    "mean_ndvi": 0.4659,
+    "n_ndvi": 4186,
+    "share_utfvi": [
+     0.5645,
+     0.2831,
+     0.1075,
+     0.0303,
+     0.0108,
+     0.0038
+    ],
+    "share_bld_type": [
+     0.1017,
+     0.6017,
+     0.0839,
+     0.0144,
+     0.1983
+    ]
+   },
+   "synthetic": true
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+tests/node_modules/
+tests/package-lock.json
+tests/shots/
+tests/points.json
+data/raw_synth/
+__pycache__/
+.DS_Store
+.venv/
