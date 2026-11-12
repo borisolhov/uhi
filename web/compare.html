@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Порівняння міст · Острови тепла українських міст</title>
+  <meta name="description" content="Порівняння островів тепла Києва, Львова, Івано-Франківська, Чернівців і Ужгорода: денний і нічний перегрів, UTFVI, тип забудови, рослинність.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="brand">
+      <p class="eyebrow">Супутникова діагностика · літо</p>
+      <h1>Острови тепла українських міст</h1>
+      <nav class="nav">
+        <a href="index.html">Карта</a>
+        <a href="compare.html" aria-current="page">Порівняння міст</a>
+        <a href="methodology.html">Методика</a>
+      </nav>
+    </header>
+
+    <p class="lead">Як сильно забудова п'яти міст нагрівається влітку порівняно з заміською місцевістю — удень і вночі. Усі числа нижче — середні по кварталах забудови (100 × 100 м), де забудову визначено за Dynamic World.</p>
+
+    <div id="headline" class="stats" aria-label="Головне"></div>
+
+    <h2>Наскільки забудова тепліша за заміську місцевість</h2>
+    <p class="sub">Середня ΔT поверхні по кварталах забудови, °C. Удень — Landsat (близько 12:00), уночі — ECOSTRESS (22:00–06:00). Міста впорядковано за денною ΔT.</p>
+    <div class="card">
+      <div class="legend-row" id="lg-dt"></div>
+      <svg id="ch-dt" class="chart" role="img" aria-labelledby="ch-dt-t"><title id="ch-dt-t">ΔT удень і вночі за містами</title></svg>
+    </div>
+
+    <h2>Частка забудови за класами UTFVI</h2>
+    <p class="sub">Яка частина кварталів забудови потрапляє в кожен клас екологічного стану за індексом теплового поля (денні знімки). Чим ширші помаранчеві й червоні частини, тим більша площа виражених теплових островів.</p>
+    <div class="card">
+      <div class="legend-row" id="lg-utfvi"></div>
+      <div id="ch-utfvi"></div>
+    </div>
+
+    <h2>Багатоповерхівки й приватний сектор</h2>
+    <p class="sub">Середня ΔT у кварталах, де переважає багатоповерхова житлова чи приватна садибна забудова (за OpenStreetMap). У кожному місті багатоповерхівки тепліші і вдень, і вночі.</p>
+    <div class="card">
+      <div class="legend-row" id="lg-type"></div>
+      <svg id="ch-type" class="chart" role="img" aria-labelledby="ch-type-t"><title id="ch-type-t">ΔT у кварталах багатоповерхової і приватної забудови</title></svg>
+    </div>
+
+    <h2>Зелень і температура</h2>
+    <p class="sub">Коефіцієнт кореляції Пірсона між NDVI і денною ΔT по кварталах забудови. Від’ємне значення означає: що більше рослинності, то прохолодніша поверхня. Це зв'язок, а не доведена причина.</p>
+    <div id="ndvi" class="stats"></div>
+
+    <h2>Усі показники</h2>
+    <div class="tbl-wrap">
+      <table class="data" id="tbl">
+        <thead><tr>
+          <th>Місто</th><th>ΔT вдень, °C</th><th>ΔT вночі, °C</th><th>Кварталів забудови</th>
+          <th>UTFVI «погана» і гірше, %</th><th>NDVI сер.</th>
+          <th>Багатоповерх., ΔT вдень / вночі</th><th>Приватний, ΔT вдень / вночі</th><th>r (NDVI, ΔT)</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2>Як читати порівняння</h2>
+    <ul>
+      <li>Кожне місто порівнюється зі <b>своєю</b> заміською місцевістю (трав'янисті ділянки й поля довкола). Тому ΔT показує силу острова тепла саме цього міста, а не те, яке місто спекотніше в абсолютних градусах.</li>
+      <li>У Чернівцях заміський еталон найтепліший з п'яти міст, тож їхня ΔT, ймовірно, дещо занижена.</li>
+      <li>Кількість безхмарних денних знімків різна для різних міст (від 27 до 79), тому надійність середніх неоднакова.</li>
+      <li>Це температура <b>поверхні</b> (дахів, асфальту, газонів), а не повітря, і лише для літнього сезону.</li>
+      <li>Детальніше — на сторінці <a href="methodology.html">«Методика»</a>.</li>
+    </ul>
+  </div>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+  <script type="module" src="js/compare.js"></script>
+</body>
+</html>

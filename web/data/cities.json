@@ -78,7 +78,14 @@
      0.0301,
      0.0251,
      0.231
-    ]
+    ],
+    "dt_day_apt": 5.017,
+    "dt_night_apt": 2.357,
+    "n_apt": 867,
+    "dt_day_priv": 2.821,
+    "dt_night_priv": 0.747,
+    "n_priv": 3567,
+    "r_ndvi_dt_day": -0.706
    },
    "synthetic": false
   },
@@ -160,7 +167,14 @@
      0.1011,
      0.0332,
      0.2338
-    ]
+    ],
+    "dt_day_apt": 3.322,
+    "dt_night_apt": 2.623,
+    "n_apt": 9230,
+    "dt_day_priv": 1.534,
+    "dt_night_priv": 0.924,
+    "n_priv": 16841,
+    "r_ndvi_dt_day": -0.678
    },
    "synthetic": false
   },
@@ -242,7 +256,14 @@
      0.0448,
      0.0304,
      0.201
-    ]
+    ],
+    "dt_day_apt": 3.894,
+    "dt_night_apt": 2.332,
+    "n_apt": 2623,
+    "dt_day_priv": 2.14,
+    "dt_night_priv": 1.041,
+    "n_priv": 9633,
+    "r_ndvi_dt_day": -0.707
    },
    "synthetic": false
   },
@@ -324,7 +345,14 @@
      0.015,
      0.0204,
      0.2315
-    ]
+    ],
+    "dt_day_apt": 2.88,
+    "dt_night_apt": 1.555,
+    "n_apt": 433,
+    "dt_day_priv": 1.007,
+    "dt_night_priv": 0.63,
+    "n_priv": 5029,
+    "r_ndvi_dt_day": -0.72
    },
    "synthetic": false
   },
@@ -406,7 +434,14 @@
      0.0699,
      0.0145,
      0.1855
-    ]
+    ],
+    "dt_day_apt": 3.906,
+    "dt_night_apt": 2.212,
+    "n_apt": 366,
+    "dt_day_priv": 2.156,
+    "dt_night_priv": 1.205,
+    "n_priv": 3049,
+    "r_ndvi_dt_day": -0.66
    },
    "synthetic": false
   }

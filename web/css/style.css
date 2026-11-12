@@ -140,3 +140,68 @@ button, input { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .panel, .chip { transition: none; }
 }
+
+/* =========================================================
+   Текстові сторінки: порівняння міст і методика
+   ========================================================= */
+.page { max-width: 880px; margin: 0 auto; padding: 28px 20px 64px; }
+.page .brand { padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.page .brand h1 { font-size: 28px; }
+.page h2 { font-size: 20px; margin: 40px 0 6px; letter-spacing: -.01em; }
+.page h3 { font-size: 15px; margin: 22px 0 4px; }
+.page p, .page li { max-width: 68ch; }
+.page .lead { font-size: 16px; color: var(--muted); margin-top: 18px; }
+.page .sub { color: var(--muted); margin: 0 0 14px; }
+.page a { color: var(--accent); }
+.page code, .page .f { font-family: var(--mono); font-size: 13px; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+.page .formula { font-family: var(--mono); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 10px 0; overflow-x: auto; }
+.page ul { padding-left: 20px; }
+.page li { margin: 4px 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 12px; margin-top: 12px; }
+.callout { background: #fff8e6; border: 1px solid #ecd9a3; border-radius: var(--radius); padding: 12px 14px; margin: 14px 0; }
+
+/* таблиці */
+.tbl-wrap { overflow-x: auto; margin-top: 12px; }
+table.data { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.data th, table.data td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.data th:first-child, table.data td:first-child { text-align: left; }
+table.data th { font-weight: 600; color: var(--muted); font-size: 12px; vertical-align: bottom; white-space: normal; }
+table.data td { font-variant-numeric: tabular-nums; }
+table.data tbody tr:hover { background: var(--accent-soft); }
+details.table-view { margin-top: 10px; }
+details.table-view summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+
+/* графіки */
+.chart { width: 100%; display: block; overflow: visible; }
+.chart text { font-family: var(--font); fill: var(--ink); font-size: 12px; }
+.chart .axis text, .chart .tick { fill: var(--muted); font-size: 11px; }
+.chart .grid line { stroke: #ece6dc; stroke-width: 1; }
+.chart .base { stroke: #b9b0a3; stroke-width: 1; }
+.chart .val { font-variant-numeric: tabular-nums; font-size: 11.5px; }
+.chart .mark { cursor: default; }
+.chart .mark:hover, .chart .hit:hover + .mark { opacity: .8; }
+.legend-row { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 4px 0 10px; font-size: 12.5px; color: var(--ink); }
+.legend-row .k { display: inline-flex; align-items: center; gap: 6px; }
+.legend-row .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.legend-row .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.tip {
+  position: fixed; pointer-events: none; z-index: 20; background: #1f1d1a; color: #fff;
+  font-size: 12px; padding: 6px 9px; border-radius: 6px; max-width: 260px; line-height: 1.4;
+  box-shadow: var(--shadow); opacity: 0; transition: opacity .1s;
+}
+.tip.on { opacity: 1; }
+.tip b { font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.stat .l { font-size: 12px; color: var(--muted); }
+.stat .v { font-size: 22px; font-weight: 600; margin-top: 2px; }
+.stat .s { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 600px) {
+  .page { padding: 18px 14px 48px; }
+  .page .brand h1 { font-size: 22px; }
+  .page h2 { font-size: 18px; margin-top: 32px; }
+}
+.page .nav a { color: var(--muted); }
+.page .nav a[aria-current="page"] { color: var(--ink); }
+table.data.text th, table.data.text td { text-align: left; white-space: normal; }

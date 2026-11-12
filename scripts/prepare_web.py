@@ -127,6 +127,17 @@ def city_stats(b, layers):
         c = c[c >= 0]
         st[f"share_{k}"] = [round(float((c == i).mean()), 4) if c.size else None
                             for i in range(len(layers[k]["colors"]))]
+    # середня ΔT за домінантним типом забудови (лише комірки забудови): 1 багатоповерхова, 2 приватна
+    for code, key in ((1, "apt"), (2, "priv")):
+        m = u & (b["bld_type"] == code)
+        for k in ("dt_day", "dt_night"):
+            v = b[k][m]
+            v = v[np.isfinite(v)]
+            st[f"{k}_{key}"] = round(float(v.mean()), 3) if v.size >= 30 else None
+        st[f"n_{key}"] = int(m.sum())
+    # кореляція Пірсона NDVI ↔ ΔT вдень по комірках забудови
+    ok = u & np.isfinite(b["ndvi"]) & np.isfinite(b["dt_day"])
+    st["r_ndvi_dt_day"] = round(float(np.corrcoef(b["ndvi"][ok], b["dt_day"][ok])[0, 1]), 3) if ok.sum() > 30 else None
     return st
 
 
