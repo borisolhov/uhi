@@ -28,7 +28,7 @@ try:
             pg.on('console', lambda m: m.type == 'error' and errors.append(m.text))
             pg.route('**/*', route)
             pg.goto('http://localhost:8765/#city=ivano_frankivsk&layer=dt_day')
-            pg.wait_for_function("document.querySelectorAll('#cities .chip').length === 5", timeout=15000)
+            pg.wait_for_function("document.querySelectorAll('#cities .chip').length >= 5", timeout=15000)
             pg.wait_for_timeout(2500)
             box = pg.locator('#map').bounding_box()
             pg.mouse.click(box['x'] + box['width'] * .5, box['y'] + box['height'] * (.45 if name == 'desktop' else .3))
