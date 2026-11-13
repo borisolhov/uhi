@@ -77,16 +77,19 @@ function toUTM(lon, lat, zone) {
             61 * Math.pow(n, 3) / 240];
   var rad = Math.PI / 180, phi = lat * rad, dl = (lon - (zone * 6 - 183)) * rad;
   var e = 2 * Math.sqrt(n) / (1 + n);
-  var t = Math.sinh(atanh(Math.sin(phi)) - e * atanh(e * Math.sin(phi)));
+  var t = sinh(atanh(Math.sin(phi)) - e * atanh(e * Math.sin(phi)));
   var xi = Math.atan2(t, Math.cos(dl)), eta = atanh(Math.sin(dl) / Math.sqrt(1 + t * t));
   var x = eta, y = xi;
   for (var j = 1; j <= 3; j++) {
-    x += al[j - 1] * Math.cos(2 * j * xi) * Math.sinh(2 * j * eta);
-    y += al[j - 1] * Math.sin(2 * j * xi) * Math.cosh(2 * j * eta);
+    x += al[j - 1] * Math.cos(2 * j * xi) * sinh(2 * j * eta);
+    y += al[j - 1] * Math.sin(2 * j * xi) * cosh(2 * j * eta);
   }
   return [500000 + k0 * A * x, k0 * A * y];
 }
+// Власні гіперболічні функції: у редакторі Earth Engine немає Math.sinh / Math.cosh / Math.atanh.
 function atanh(v) { return 0.5 * Math.log((1 + v) / (1 - v)); }
+function sinh(v) { return (Math.exp(v) - Math.exp(-v)) / 2; }
+function cosh(v) { return (Math.exp(v) + Math.exp(-v)) / 2; }
 
 // ---------- 2. ЗАГАЛЬНІ ШАРИ ----------
 var wc = ee.ImageCollection('ESA/WorldCover/v200').first().select('Map');
