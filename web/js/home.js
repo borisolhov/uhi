@@ -10,16 +10,23 @@ for (const c of meta.cities) {
   const day = art.dT_day ?? c.stats.mean_dt_day, night = art.dT_night_ecostress ?? c.stats.mean_dt_night;   // числа статті
   const a = document.createElement('a');
   a.className = 'city-card';
-  a.href = `map.html#city=${c.id}&layer=${dayOk ? 'dt_day' : 'dt_night'}`;
+  a.href = `map.html#city=${c.id}&layer=dt_day`;
   a.innerHTML = `
-    <span class="thumb"><img src="data/${c.id}/${dayOk ? 'dt_day' : 'dt_night'}.png" alt="" loading="lazy"></span>
+    <span class="thumb"><img src="data/${c.id}/dt_day.png" alt="" loading="lazy"></span>
     <span class="nm">${c.name}</span>
     <span class="nums">
-      <span><i class="dot day"></i>удень <b>${dayOk ? signed(day) + ' °C' : 'не порівн.'}</b></span>
+      <span><i class="dot day"></i>удень <b>${signed(day)} °C${dayOk ? '' : '*'}</b></span>
       <span><i class="dot night"></i>уночі <b>${signed(night)} °C</b></span>
     </span>`;
-  if (!dayOk) a.title = 'Заміський еталон такий самий гарячий, як забудова, — денну ΔT не порівнюють з іншими містами';
+  if (!dayOk) a.title = '* Заміський еталон такий самий гарячий, як забудова, — у статті денна ΔT Дніпра не входить до порівняння міст';
   box.append(a);
+}
+if (meta.cities.some(c => c.dt_day_comparable === false)) {
+  const fn = document.createElement('p');
+  fn.className = 'footnote';
+  fn.textContent = '* ' + meta.cities.filter(c => c.dt_day_comparable === false).map(c => c.name).join(', ') +
+    ': заміський еталон (степові поля) такий самий гарячий, як забудова, тому денна ΔT близька до нуля; у статті вона не входить до денного порівняння міст.';
+  box.after(fn);
 }
 
 // Велика ілюстрація: місто з найсильнішим денним островом

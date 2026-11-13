@@ -9,7 +9,7 @@ const NS = 'http://www.w3.org/2000/svg';
 // кольори перевірено на розрізнення при порушеннях колірного зору (dataviz validate_palette)
 const C = { day: '#e0763a', night: '#6a4fa3', apt: L.bld_type.colors[0], priv: L.bld_type.colors[1] };
 // note — застереження для міста
-// dayOk = false: денну ΔT міста не можна порівнювати з іншими (еталон гарячий) — сортується в кінець
+// dayOk = false: денна ΔT показується, але з зірочкою (у статті не входить до денного порівняння)
 const cities = meta.cities.map(c => {
   const a = c.article || {}, s = c.stats, ap = a.apt_minus_priv;
   return { id: c.id, name: c.name, plain: c.name, note: c.note, dayOk: c.dt_day_comparable !== false, ...s,
@@ -20,7 +20,9 @@ const cities = meta.cities.map(c => {
     diff: ap ? { day: ap.day, dayCI: ap.day_ci, night: ap.night, nightCI: ap.night_ci, nA: ap.n_apt, nP: ap.n_priv }
              : (s.dt_day_apt != null ? { day: s.dt_day_apt - s.dt_day_priv, night: s.dt_night_apt - s.dt_night_priv } : null) };
 })
-  .sort((a, b) => (b.dayOk - a.dayOk) || (b.mean_dt_day - a.mean_dt_day));
+  .sort((a, b) => b.mean_dt_day - a.mean_dt_day);
+const DAY_FN = 'Денна ΔT Дніпра показана для повноти, але в статті не входить до денного порівняння міст: заміський еталон (степові поля, близько 35,5 °C) такий самий гарячий, як забудова, тому ΔT близька до нуля. Нічна ΔT, UTFVI, NDVI й тип забудови для Дніпра порівнянні з іншими містами.';
+const star = c => c.dayOk ? '' : '*';
 const withType = cities.filter(c => c.diff);
 
 const tip = document.getElementById('tip');
@@ -91,9 +93,6 @@ function chartDT() {
   const W = svg.clientWidth || 800, labW = W < 480 ? 122 : 136, padR = 44;
   const bh = 12, gap = 4, rowH = bh * 2 + gap + 18, top = 6, H = top + cities.length * rowH + 22;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
-  const defs = svgEl('defs', {}, svg), pat = svgEl('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
-  svgEl('rect', { width: 6, height: 6, fill: '#e8e2d8' }, pat);
-  svgEl('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#b9b0a3', 'stroke-width': 2 }, pat);
   const max = niceMax(Math.max(...cities.map(c => Math.max(c.mean_dt_day, c.mean_dt_night))));
   const min = niceMin(Math.min(...cities.map(c => Math.min(c.mean_dt_day, c.mean_dt_night))));
   const x = v => labW + (W - labW - padR) * (v - min) / (max - min);
@@ -107,14 +106,11 @@ function chartDT() {
     text(svg, 0, y + bh + 4, c.name, { 'dominant-baseline': 'middle', 'font-weight': 600 });
     [['day', c.mean_dt_day, 'удень'], ['night', c.mean_dt_night, 'уночі']].forEach(([k, v, lab], j) => {
       const yy = y + j * (bh + gap);
-      const off = k === 'day' && !c.dayOk;          // непорівнянна денна ΔT: сіра смуга з поясненням
-      const fill = off ? 'url(#hatch)' : C[k];
-      const m = v >= 0 ? bar(svg, x(0), x(v), yy, bh, fill) : barLeft(svg, x(v), x(0), yy, bh, fill);
-      const lbl = signed(v) + (off ? '  не порівнюється' : '');
-      text(svg, v >= 0 ? x(v) + 6 : x(v) - 6, yy + bh / 2 + 1, lbl,
-           { 'dominant-baseline': 'middle', class: 'val', 'text-anchor': v >= 0 ? 'start' : 'end', ...(off ? { fill: '#6b655c' } : {}) });
-      hover(m, `<b>${c.plain}</b>, ${lab}<br>ΔT ${signed(v, 2)} °C` +
-               (off ? '<br>Заміський еталон такий самий гарячий, як забудова, — з іншими містами не порівнювати.' : ''));
+      const off = k === 'day' && !c.dayOk;          // зірочка біля денної ΔT Дніпра
+      const m = v >= 0 ? bar(svg, x(0), x(v), yy, bh, C[k]) : barLeft(svg, x(v), x(0), yy, bh, C[k]);
+      text(svg, v >= 0 ? x(v) + 6 : x(v) - 6, yy + bh / 2 + 1, signed(v) + (off ? '*' : ''),
+           { 'dominant-baseline': 'middle', class: 'val', 'text-anchor': v >= 0 ? 'start' : 'end' });
+      hover(m, `<b>${c.plain}</b>, ${lab}<br>ΔT ${signed(v, 2)} °C` + (off ? `<br>* ${DAY_FN}` : ''));
     });
   });
   svgEl('line', { x1: x(0), x2: x(0), y1: top, y2: H - 20, class: 'base' }, svg);
@@ -201,7 +197,7 @@ function table() {
   const ci = v => v ? ` <span class="ci">[${fmt(v[0], 2)}; ${fmt(v[1], 2)}]</span>` : '';
   document.querySelector('#tbl tbody').innerHTML = cities.map(c => `<tr>
     <td>${c.name}</td>
-    <td>${signed(c.mean_dt_day, 2)}${c.dayOk ? '' : ' <span class="ci">не порівн.</span>'}</td><td>${signed(c.mean_dt_night, 2)}</td>
+    <td>${signed(c.mean_dt_day, 2)}${star(c)}</td><td>${signed(c.mean_dt_night, 2)}</td>
     <td>${num(c.ref, 1)}</td><td>${c.scenes ?? '—'}</td><td>${c.frames ?? '—'}</td>
     <td>${fmt(c.utfvi_bad, 1)}</td><td>${num(c.mean_ndvi, 2)}</td>
     <td>${c.diff ? '+' + fmt(c.diff.day, 2) + ci(c.diff.dayCI) : '—'}</td>
@@ -222,6 +218,10 @@ legend('lg-dt', [[C.day, 'Удень'], [C.night, 'Уночі']]);
 legend('lg-utfvi', L.utfvi.colors.map((c, i) => [c, `${L.utfvi.classnames[i]} (${L.utfvi.labels[i]})`]));
 legend('lg-type', [[C.day, 'Удень', true], [C.night, 'Уночі', true]]);
 headline(); ndvi(); table(); notes();
+for (const id of ['fn-dt', 'fn-tbl']) {
+  const el = document.getElementById(id);
+  if (el && cities.some(c => !c.dayOk)) { el.textContent = '* ' + DAY_FN; el.hidden = false; }
+}
 const draw = () => { chartDT(); chartUTFVI(); chartType(); };
 draw();
 let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(draw, 150); });

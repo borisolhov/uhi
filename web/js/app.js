@@ -247,7 +247,7 @@ function describe(k, x) {
   }
   if (L.kind === 'categories') return ['', L.labels[i] ?? '—', color];
   let txt = L.explain[i] + (L.classnames ? ` (клас «${L.classnames[i]}»)` : '');
-  if (k === 'dt_day' && state.city.dt_day_comparable === false) txt += '; для цього міста денна ΔT не порівнюється з іншими містами';
+  if (k === 'dt_day' && state.city.dt_day_comparable === false) txt += ' (* у статті денна ΔT цього міста не входить до порівняння міст: заміський еталон дуже гарячий)';
   return [(k.startsWith('dt_') && x > 0 ? '+' : '') + fmt(x, L.decimals) + (L.unit ? ' ' + L.unit : ''), txt, color];
 }
 
