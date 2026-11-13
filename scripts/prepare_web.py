@@ -2,11 +2,13 @@
 """
 Підготовка растрів для сайту «Острови тепла українських міст».
 
-Вхід (для кожного міста <id>):
-  data/raw/web_<id>.tif        — експорт з Earth Engine (5 смуг: dT_day, dT_night, utfvi, ndvi, urban;
-                                 float32, nodata -9999), сітка UTM 100 м як у <id>_osm_bld.tif
+Вхід (для кожного міста <id>), експорт з Earth Engine, float32, nodata -9999, сітка UTM 100 м:
+  data/raw/web_<id>.tif        — один файл, 5 смуг: dT_day, dT_night, utfvi, ndvi, urban (uhi_multicity.js)
+  або data/raw/web_<id>_day.tif (dT_day, utfvi, ndvi, urban) + web_<id>_night.tif (dT_night, n_night)
+                                 (uhi_web_export.js). Смуги читаються за назвами.
   data/osm/<id>_osm_bld.tif    — растр будівель OSM (h_mean, h_tagged, f_built, share_tagged, n_bld)
   data/osm/<id>_osm_cls.tif    — частки класів (share_apt, share_priv, share_nonres, share_aux, share_unk)
+  Файли OSM необов'язкові: без них у міста немає шару «Тип забудови», але сітка тоді не звіряється.
 
 Вихід:
   web/data/<id>/<шар>.png      — кольоровий растр у Web Mercator (EPSG:3857), прозорий там, де немає даних
@@ -39,8 +41,20 @@ CITIES = {  # порядок = порядок у перемикачі на са�
     "lviv": "Львів",
     "chernivtsi": "Чернівці",
     "uzhhorod": "Ужгород",
+    "dnipro": "Дніпро",
+    "kharkiv": "Харків",
 }
-EE_BANDS = ["dt_day", "dt_night", "utfvi", "ndvi", "urban"]        # порядок смуг web_<id>.tif
+# Міста, яких немає в статті (додано пізніше) — сайт позначає їх окремо.
+LATER = {"dnipro", "kharkiv"}
+# Короткі застереження, які сайт показує в картці кварталу й на сторінці порівняння.
+CITY_NOTES = {
+    "dnipro": "Удень забудова Дніпра в середньому не тепліша за степові поля довкола (ΔT близько 0 °C), "
+              "хоча в еталон узято лише ділянки з живою рослинністю (NDVI ≥ 0,3). Уночі острів тепла є. "
+              "Гарячі точки всередині міста найкраще видно на шарі UTFVI.",
+    "kharkiv": "Знімки Landsat 2023–2025 бачать пошкоджену й зруйновану забудову, а OpenStreetMap може її "
+               "ще не відображати; окремі квартали можуть виглядати не так, як до 2022 року.",
+}
+EE_BANDS = ["dt_day", "dt_night", "utfvi", "ndvi", "urban"]        # потрібні смуги з Earth Engine
 OUT_BANDS = ["dt_day", "dt_night", "utfvi", "ndvi", "bld_type", "urban"]
 NODATA_IN, NODATA_OUT = -9999.0, -32768
 DOMINANT_MIN = 0.5      # частка площі забудови, з якої клас вважається домінантним; інакше «змішана»
@@ -92,25 +106,50 @@ def dominant_type(bld_path, cls_path):
     return out
 
 
+def raw_files(cid):
+    one = RAW / f"web_{cid}.tif"
+    two = [RAW / f"web_{cid}_day.tif", RAW / f"web_{cid}_night.tif"]
+    if one.exists():
+        return [one]
+    if all(p.exists() for p in two):
+        return two
+    return None
+
+
+def same_grid(a, b):
+    return a["crs"] == b["crs"] and a["transform"] == b["transform"] and \
+        (a["height"], a["width"]) == (b["height"], b["width"])
+
+
 def load_city(cid):
-    """Усі смуги в сітці UTM. Повертає (dict смуга->масив float32 з NaN, профіль)."""
+    """Усі смуги в сітці UTM. Повертає (dict смуга->масив float32 з NaN, профіль, чи є OSM)."""
+    bands, prof = {}, None
+    for path in raw_files(cid):
+        with rasterio.open(path) as s:
+            if prof is None:
+                prof = s.profile
+            elif not same_grid(prof, s.profile):
+                raise SystemExit(f"{path.name}: сітка не збігається з іншим файлом міста {cid}")
+            names = [(d or "").lower() for d in s.descriptions]
+            for i, name in enumerate(names):
+                a = s.read(i + 1).astype("float32")
+                a[(a <= NODATA_IN + 1) | ~np.isfinite(a)] = np.nan
+                bands[name] = a
+    missing = [k for k in EE_BANDS if k not in bands]
+    if missing:
+        raise SystemExit(f"{cid}: у файлах немає смуг {missing} (є: {sorted(bands)})")
     bld, cls = OSM / f"{cid}_osm_bld.tif", OSM / f"{cid}_osm_cls.tif"
-    raw = RAW / f"web_{cid}.tif"
-    with rasterio.open(bld) as b:
-        prof = b.profile
-    bands = {}
-    with rasterio.open(raw) as s:
-        assert s.count == len(EE_BANDS), f"{raw.name}: очікую {len(EE_BANDS)} смуг, є {s.count}"
-        if s.crs != prof["crs"] or s.transform != prof["transform"] or s.shape != (prof["height"], prof["width"]):
-            raise SystemExit(f"{raw.name}: сітка не збігається з {bld.name} "
-                             f"({s.crs} {s.transform[2]},{s.transform[5]} {s.shape} проти "
-                             f"{prof['crs']} {prof['transform'][2]},{prof['transform'][5]})")
-        for i, name in enumerate(EE_BANDS):
-            a = s.read(i + 1).astype("float32")
-            a[(a <= NODATA_IN + 1) | ~np.isfinite(a)] = np.nan
-            bands[name] = a
-    bands["bld_type"] = dominant_type(bld, cls)
-    return bands, prof
+    has_osm = bld.exists() and cls.exists()
+    if has_osm:
+        with rasterio.open(bld) as b:
+            if not same_grid(prof, b.profile):
+                raise SystemExit(f"{cid}: сітка Earth Engine не збігається з {bld.name} "
+                                 f"({prof['crs']} {prof['transform'][2]},{prof['transform'][5]} проти "
+                                 f"{b.crs} {b.transform[2]},{b.transform[5]})")
+        bands["bld_type"] = dominant_type(bld, cls)
+    else:
+        bands["bld_type"] = np.full(bands["dt_day"].shape, np.nan, dtype="float32")
+    return {k: bands[k] for k in EE_BANDS + ["bld_type"]}, prof, has_osm
 
 
 def city_stats(b, layers):
@@ -164,7 +203,7 @@ def scale_of(k, layers):
 
 
 def process(cid, layers):
-    b_utm, prof = load_city(cid)
+    b_utm, prof, has_osm = load_city(cid)
     stats = city_stats(b_utm, layers)
     b, t, w, h = warp_3857(b_utm, prof)
     d = OUT / cid
@@ -198,6 +237,9 @@ def process(cid, layers):
         "nodata": NODATA_OUT,
         "layers": [k for k in layers if (d / f"{k}.png").exists()],
         "stats": stats,
+        "osm": has_osm,
+        "later": cid in LATER,
+        "note": CITY_NOTES.get(cid),
     }
 
 
@@ -214,13 +256,14 @@ def main():
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {"cities": []}
     by_id = {c["id"]: c for c in meta["cities"]}
     for cid in ids:
-        if not (RAW / f"web_{cid}.tif").exists():
-            print(f"⚠ {cid}: немає data/raw/web_{cid}.tif, пропускаю")
+        if not raw_files(cid):
+            print(f"⚠ {cid}: немає data/raw/web_{cid}.tif (або _day + _night), пропускаю")
             continue
         by_id[cid] = process(cid, layers)
         by_id[cid]["synthetic"] = synthetic     # сайт показує попередження для синтетичних даних
         c = by_id[cid]
-        print(f"✓ {cid}: {c['grid']['width']}×{c['grid']['height']}, шари: {', '.join(c['layers'])}")
+        print(f"✓ {cid}: {c['grid']['width']}×{c['grid']['height']}, шари: {', '.join(c['layers'])}"
+              + ("" if c["osm"] else " (без OSM)"))
     meta["cities"] = [by_id[c] for c in CITIES if c in by_id]
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
 

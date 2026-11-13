@@ -3,9 +3,10 @@ import json, sys, numpy as np, rasterio
 from rasterio.warp import transform
 sys.path.insert(0, 'scripts'); import prepare_web as pw
 pw.RAW = pw.ROOT / ('data/raw_synth' if 'synth' in sys.argv else 'data/raw')
+if 'synth' in sys.argv: pw.CITIES = {k: v for k, v in pw.CITIES.items() if k not in pw.LATER}
 rng = np.random.default_rng(7); out = []
 for cid in pw.CITIES:
-    b, prof = pw.load_city(cid); t = prof['transform']; H, W = prof['height'], prof['width']
+    b, prof, _ = pw.load_city(cid); t = prof['transform']; H, W = prof['height'], prof['width']
     xs = t.c + rng.uniform(0, W, 400) * t.a; ys = t.f + rng.uniform(0, H, 400) * t.e
     lon, lat = transform(prof['crs'], 'EPSG:4326', xs, ys)
     for x, y, lo, la in zip(xs, ys, lon, lat):

@@ -87,6 +87,9 @@
     "n_priv": 3567,
     "r_ndvi_dt_day": -0.706
    },
+   "osm": true,
+   "later": false,
+   "note": null,
    "synthetic": false
   },
   {
@@ -176,6 +179,9 @@
     "n_priv": 16841,
     "r_ndvi_dt_day": -0.678
    },
+   "osm": true,
+   "later": false,
+   "note": null,
    "synthetic": false
   },
   {
@@ -265,6 +271,9 @@
     "n_priv": 9633,
     "r_ndvi_dt_day": -0.707
    },
+   "osm": true,
+   "later": false,
+   "note": null,
    "synthetic": false
   },
   {
@@ -354,6 +363,9 @@
     "n_priv": 5029,
     "r_ndvi_dt_day": -0.72
    },
+   "osm": true,
+   "later": false,
+   "note": null,
    "synthetic": false
   },
   {
@@ -443,6 +455,191 @@
     "n_priv": 3049,
     "r_ndvi_dt_day": -0.66
    },
+   "osm": true,
+   "later": false,
+   "note": null,
+   "synthetic": false
+  },
+  {
+   "id": "dnipro",
+   "name": "Дніпро",
+   "grid": {
+    "crs": "EPSG:32636",
+    "proj4": "+proj=utm +zone=36 +datum=WGS84 +units=m +no_defs",
+    "x0": 633200.0,
+    "y0": 5388000.0,
+    "res": 100.0,
+    "width": 361,
+    "height": 361
+   },
+   "corners": [
+    [
+     34.796321,
+     48.630871
+    ],
+    [
+     35.297578,
+     48.630871
+    ],
+    [
+     35.297578,
+     48.297597
+    ],
+    [
+     34.796321,
+     48.297597
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi"
+   ],
+   "stats": {
+    "n_urban": 33101,
+    "mean_dt_day": -0.197,
+    "n_dt_day": 33101,
+    "mean_dt_night": 1.2125,
+    "n_dt_night": 33093,
+    "mean_utfvi": 0.0,
+    "n_utfvi": 33101,
+    "mean_ndvi": 0.512,
+    "n_ndvi": 33101,
+    "share_utfvi": [
+     0.5483,
+     0.2227,
+     0.1136,
+     0.0582,
+     0.0331,
+     0.0242
+    ],
+    "share_bld_type": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "dt_day_apt": null,
+    "dt_night_apt": null,
+    "n_apt": 0,
+    "dt_day_priv": null,
+    "dt_night_priv": null,
+    "n_priv": 0,
+    "r_ndvi_dt_day": -0.744
+   },
+   "osm": false,
+   "later": true,
+   "note": "Удень забудова Дніпра в середньому не тепліша за степові поля довкола (ΔT близько 0 °C), хоча в еталон узято лише ділянки з живою рослинністю (NDVI ≥ 0,3). Уночі острів тепла є. Гарячі точки всередині міста найкраще видно на шарі UTFVI.",
+   "synthetic": false
+  },
+  {
+   "id": "kharkiv",
+   "name": "Харків",
+   "grid": {
+    "crs": "EPSG:32637",
+    "proj4": "+proj=utm +zone=37 +datum=WGS84 +units=m +no_defs",
+    "x0": 286400.0,
+    "y0": 5556600.0,
+    "res": 100.0,
+    "width": 301,
+    "height": 301
+   },
+   "corners": [
+    [
+     36.011672,
+     50.133222
+    ],
+    [
+     36.447638,
+     50.133222
+    ],
+    [
+     36.447638,
+     49.852949
+    ],
+    [
+     36.011672,
+     49.852949
+    ]
+   ],
+   "bands": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi",
+    "bld_type",
+    "urban"
+   ],
+   "scales": [
+    100,
+    100,
+    10000,
+    1000,
+    1,
+    1
+   ],
+   "nodata": -32768,
+   "layers": [
+    "dt_day",
+    "dt_night",
+    "utfvi",
+    "ndvi"
+   ],
+   "stats": {
+    "n_urban": 30423,
+    "mean_dt_day": 2.0711,
+    "n_dt_day": 30423,
+    "mean_dt_night": 1.2455,
+    "n_dt_night": 30423,
+    "mean_utfvi": 0.0,
+    "n_utfvi": 30423,
+    "mean_ndvi": 0.5266,
+    "n_ndvi": 30423,
+    "share_utfvi": [
+     0.5263,
+     0.2432,
+     0.1363,
+     0.0646,
+     0.021,
+     0.0085
+    ],
+    "share_bld_type": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "dt_day_apt": null,
+    "dt_night_apt": null,
+    "n_apt": 0,
+    "dt_day_priv": null,
+    "dt_night_priv": null,
+    "n_priv": 0,
+    "r_ndvi_dt_day": -0.716
+   },
+   "osm": false,
+   "later": true,
+   "note": "Знімки Landsat 2023–2025 бачать пошкоджену й зруйновану забудову, а OpenStreetMap може її ще не відображати; окремі квартали можуть виглядати не так, як до 2022 року.",
    "synthetic": false
   }
  ]

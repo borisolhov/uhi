@@ -190,7 +190,9 @@ function showCell() {
     if (x === null) {
       val = 'немає даних';
       txt = k === 'dt_night' ? 'менше 5 придатних нічних знімків для цього кварталу'
-          : k === 'bld_type' ? 'будівель у кварталі немає' : 'немає даних для цього кварталу';
+          : k === 'bld_type' ? (state.city.osm === false ? 'дані OpenStreetMap для цього міста ще не оброблено'
+                                                          : 'будівель у кварталі немає')
+          : 'немає даних для цього кварталу';
     } else if (L.kind === 'categories') {
       val = ''; txt = L.labels[i] ?? '—';
     } else {
@@ -200,6 +202,8 @@ function showCell() {
     row.append(dot, el('span', 'name', L.title), el('span', 'val', val), el('span', 'txt', txt));
     box.append(row);
   }
+  if (state.city.note) box.append(el('p', 'city-note', state.city.note));
+  if (state.city.later) box.append(el('p', 'city-note', `${state.city.name} додано після основного дослідження; місто не входить до наукової статті.`));
 }
 
 function clearSelection() {
