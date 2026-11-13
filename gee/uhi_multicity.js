@@ -1,10 +1,12 @@
 // =====================================================================
 // UHI + МІСЬКІ КАНЬЙОНИ: ПОРІВНЯННЯ КІЛЬКОХ МІСТ УКРАЇНИ
 // Google Earth Engine (code.earthengine.google.com)
-// Міста: Івано-Франківськ, Київ, Львів, Чернівці, Ужгород
+// Міста: Івано-Франківськ, Київ, Львів, Чернівці, Ужгород, Дніпро, Харків
 // Результат: (1) інтерактивна карта з вибором міста,
 //            (2) CSV-таблиця показників по містах,
-//            (3) CSV-вибірка пікселів для статистики в Python (регресія, GWR).
+//            (3) CSV-вибірка пікселів для статистики в Python (регресія, GWR),
+//            (4) растри web_<id>.tif для сайту borisolhov.github.io/uhi (розділ 3а).
+// Версія 13.11.2026: + Дніпро, Харків; сітка експорту для сайту обчислюється автоматично.
 // =====================================================================
 
 // ---------- 1. ПАРАМЕТРИ ----------
@@ -14,52 +16,77 @@ var SCALE = 100;                                // м, крок аналізу
 var N_SAMPLE = 5000;                            // пікселів у вибірці на місто
 var RUN_EXPORTS = true;                         // false — лише карта
 var RUN_WEB_EXPORTS = true;                     // растри для сайту (розділ 3а); false — пропустити
-
-// Сітки растрів для сайту: ті самі, що в <id>_osm_bld (UTM, 100 м), щоб комірки збігалися
-// з даними OSM піксель у піксель. x0, y0 — верхній лівий кут; w, h — розмір у пікселях.
-var WEB_GRID = {
-  ivano_frankivsk: {crs: 'EPSG:32635', x0: 322300, y0: 5431300, w: 201, h: 201},
-  kyiv:            {crs: 'EPSG:32636', x0: 302100, y0: 5613700, w: 441, h: 441},
-  lviv:            {crs: 'EPSG:32635', x0: 273500, y0: 5538100, w: 261, h: 261},
-  chernivtsi:      {crs: 'EPSG:32635', x0: 412000, y0: 5358400, w: 181, h: 181},
-  uzhhorod:        {crs: 'EPSG:32634', x0: 586900, y0: 5394200, w: 161, h: 161}
-};
+// Для яких міст створювати задачі web_<id>: null — для всіх; для п'яти перших міст растри вже є.
+var WEB_EXPORT_IDS = ['dnipro', 'kharkiv'];
 
 // ECOSTRESS (70 м): нічна LST. Нічні кадри: літо, 19:00–02:00 UTC (≈ 22:00–05:00 за київським часом).
 var USE_ECO = true;                              // false — швидше, без нічної ΔT 70 м
 var ECO_START = '2018-07-01', ECO_END = '2026-11-03';
 var ECO_MIN_COVER = 0.5;                         // частка кола аналізу, покрита чистими пікселями кадру
 
-// id — для імен файлів (латиницею); r — радіус аналізу, км;
-// osm — шлях до растру будівель OSM (після завантаження з osm_buildings.py), або null.
+// id — для імен файлів (латиницею); r — радіус кола аналізу, км (центр кола = lon, lat).
+// Ті самі центри й радіуси мають стояти в osm_buildings.py, інакше сітки OSM і сайту не збіжаться.
+var ASSETS = 'projects/eng-archery-426318-m5/assets/';
 var CITIES = {
-  'Івано-Франківськ': {id: 'ivano_frankivsk', lon: 24.7111, lat: 48.9215, r: 10,
-                       osm: 'projects/eng-archery-426318-m5/assets/ivano_frankivsk_osm_bld'},
-  'Київ':             {id: 'kyiv',            lon: 30.5234, lat: 50.4501, r: 22,
-                       osm: 'projects/eng-archery-426318-m5/assets/kyiv_osm_bld'},
-  'Львів':            {id: 'lviv',            lon: 24.0316, lat: 49.8397, r: 13,
-                       osm: 'projects/eng-archery-426318-m5/assets/lviv_osm_bld'},
-  'Чернівці':         {id: 'chernivtsi',      lon: 25.9358, lat: 48.2921, r: 9,
-                       osm: 'projects/eng-archery-426318-m5/assets/chernivtsi_osm_bld'},
-  'Ужгород':          {id: 'uzhhorod',        lon: 22.2879, lat: 48.6208, r: 8,
-                       osm: 'projects/eng-archery-426318-m5/assets/uzhhorod_osm_bld'}
+  'Івано-Франківськ': {id: 'ivano_frankivsk', lon: 24.7111, lat: 48.9215, r: 10},
+  'Київ':             {id: 'kyiv',            lon: 30.5234, lat: 50.4501, r: 22},
+  'Львів':            {id: 'lviv',            lon: 24.0316, lat: 49.8397, r: 13},
+  'Чернівці':         {id: 'chernivtsi',      lon: 25.9358, lat: 48.2921, r: 9},
+  'Ужгород':          {id: 'uzhhorod',        lon: 22.2879, lat: 48.6208, r: 8},
+  // Нові міста (13.11.2026). Радіуси попередні — перевірте контур «Коло аналізу» на карті.
+  // Дніпро: степова зона. Якщо в підсумку rural_ndvi < 0,3 або mean_dT ≤ 0, розкоментуйте
+  // ruralNdviMin — тоді в еталон підуть лише ділянки з живою рослинністю (як планувалось для Одеси).
+  'Дніпро':           {id: 'dnipro',          lon: 35.0462, lat: 48.4647, r: 18 /*, ruralNdviMin: 0.3 */},
+  'Харків':           {id: 'kharkiv',         lon: 36.2304, lat: 49.9935, r: 15}
 };
-// Частки класів будівель (багатоповерхівки, приватний сектор, нежитлові, допоміжні, невизначені):
-// другий растр <id>_osm_cls (його створює osm_buildings.py). Немає активу — постав null.
-var CLS_BANDS = ['share_apt', 'share_priv', 'share_nonres', 'share_aux', 'share_unk'];
-// CLS_READY — id міст, для яких `<id>_osm_cls` уже завантажено в Assets (додавайте міста по мірі завантаження).
+// Які активи OSM уже завантажено в Assets (додавайте id по мірі завантаження):
+//   OSM_READY — <id>_osm_bld (h_mean, h_tagged, f_built, share_tagged, n_bld); без нього береться GHSL;
+//   CLS_READY — <id>_osm_cls (частки класів будівель).
+// Для сайту ці активи не потрібні: web_<id>.tif від них не залежить, тип забудови сайт бере з файлів OSM.
+var OSM_READY = ['ivano_frankivsk', 'kyiv', 'lviv', 'chernivtsi', 'uzhhorod'];
 var CLS_READY = ['ivano_frankivsk'];
+var CLS_BANDS = ['share_apt', 'share_priv', 'share_nonres', 'share_aux', 'share_unk'];
 Object.keys(CITIES).forEach(function (k) {
-  CITIES[k].cls = CLS_READY.indexOf(CITIES[k].id) >= 0
-    ? 'projects/eng-archery-426318-m5/assets/' + CITIES[k].id + '_osm_cls' : null;
+  var c = CITIES[k];
+  c.osm = OSM_READY.indexOf(c.id) >= 0 ? ASSETS + c.id + '_osm_bld' : null;
+  c.cls = CLS_READY.indexOf(c.id) >= 0 ? ASSETS + c.id + '_osm_cls' : null;
+  c.grid = utmGrid(c);
 });
 // Одеса виключена: сільський еталон (випалений степ) гарячіший за приморське місто, ΔT втрачає зміст.
 // Щоб повернути, додайте запис нижче; код маски суші й ruralNdviMin у analyse() збережено:
-//   'Одеса': {id: 'odesa', lon: 30.7233, lat: 46.4825, r: 16, osm: null,
+//   'Одеса': {id: 'odesa', lon: 30.7233, lat: 46.4825, r: 16,
 //             coast: {buf: 150, bufNight: 1000}, ruralNdviMin: 0.3},
-// Приклад підключення OSM-шару:
-// CITIES['Львів'].osm = 'projects/YOUR_PROJECT/assets/osm_bld_lviv';
-// (растр має мати смуги: h_mean, h_tagged, f_built, share_tagged)
+
+// ---------- 1а. СІТКА 100 м ДЛЯ МІСТА ----------
+// Те саме правило, що в osm_buildings.py (перевірено на п'яти містах): зона UTM за довготою центру,
+// квадрат навколо кола аналізу, кути вирівняні на 100 м:
+//   x0 = floor((x_центр − R) / 100)·100,  y0 = ceil((y_центр + R) / 100)·100,  w = h = 2R/100 + 1.
+// Перетворення в UTM рахується тут же (ряд Крюгера, точність ~1 мм), без запитів до сервера.
+function utmGrid(c) {
+  var zone = Math.floor((c.lon + 180) / 6) + 1;
+  var xy = toUTM(c.lon, c.lat, zone), R = c.r * 1000, n = 2 * c.r * 1000 / SCALE + 1;
+  return {crs: 'EPSG:' + (32600 + zone),
+          x0: Math.floor((xy[0] - R) / SCALE) * SCALE,
+          y0: Math.ceil((xy[1] + R) / SCALE) * SCALE, w: n, h: n};
+}
+function toUTM(lon, lat, zone) {
+  var a = 6378137, f = 1 / 298.257223563, k0 = 0.9996;
+  var n = f / (2 - f), A = a / (1 + n) * (1 + n * n / 4 + Math.pow(n, 4) / 64);
+  var al = [n / 2 - 2 * n * n / 3 + 5 * Math.pow(n, 3) / 16,
+            13 * n * n / 48 - 3 * Math.pow(n, 3) / 5,
+            61 * Math.pow(n, 3) / 240];
+  var rad = Math.PI / 180, phi = lat * rad, dl = (lon - (zone * 6 - 183)) * rad;
+  var e = 2 * Math.sqrt(n) / (1 + n);
+  var t = Math.sinh(atanh(Math.sin(phi)) - e * atanh(e * Math.sin(phi)));
+  var xi = Math.atan2(t, Math.cos(dl)), eta = atanh(Math.sin(dl) / Math.sqrt(1 + t * t));
+  var x = eta, y = xi;
+  for (var j = 1; j <= 3; j++) {
+    x += al[j - 1] * Math.cos(2 * j * xi) * Math.sinh(2 * j * eta);
+    y += al[j - 1] * Math.sin(2 * j * xi) * Math.cosh(2 * j * eta);
+  }
+  return [500000 + k0 * A * x, k0 * A * y];
+}
+function atanh(v) { return 0.5 * Math.log((1 + v) / (1 - v)); }
 
 // ---------- 2. ЗАГАЛЬНІ ШАРИ ----------
 var wc = ee.ImageCollection('ESA/WorldCover/v200').first().select('Map');
@@ -240,8 +267,10 @@ Object.keys(CITIES).forEach(function (n) {
 });
 var table = ee.FeatureCollection(feats);
 // діагностика: якщо mean_dT < 0, сільський еталон гарячіший за місто — перевірте rural_lst_c, rural_ndvi
-print('Підсумок по містах', table.select(['city', 'n_scenes', 'rural_lst_c', 'rural_ndvi',
-                                           'rural_pixels', 'mean_lst_c', 'mean_dT'], null, false));
+// для Дніпра й Харкова перевірте: mean_dT > 0, rural_ndvi правдоподібний (≈0,4–0,7), n_scenes не надто мале
+print('Підсумок по містах', table.select(['city', 'buildings_source', 'n_scenes', 'rural_lst_c',
+                                           'rural_ndvi', 'rural_pixels', 'mean_lst_c', 'mean_dT',
+                                           'mean_dT_night'], null, false));
 var sampleAll = ee.FeatureCollection(samples).flatten();
 
 if (RUN_EXPORTS) {
@@ -252,19 +281,20 @@ if (RUN_EXPORTS) {
 }
 
 // ---------- 3а. РАСТРИ ДЛЯ САЙТУ ----------
-// Один GeoTIFF на місто, 5 смуг (float32, nodata -9999), у сітці WEB_GRID:
+// Один GeoTIFF на місто, 5 смуг (float32, nodata -9999), у сітці c.grid (див. 1а):
 //   1 dT_day   — ΔT вдень, °C (Landsat, уся суша в колі аналізу, не лише забудова)
 //   2 dT_night — ΔT вночі, °C (ECOSTRESS; лише пікселі з n_night70 ≥ 5, як у статті)
 //   3 utfvi    — UTFVI (безрозмірний)
 //   4 ndvi     — NDVI (літня медіана Landsat)
-//   5 urban    — 1 = забудова за Dynamic World, 0 = ні (для підпису у спливному вікні)
+//   5 urban    — 1 = забудова за Dynamic World, 0 = ні (для підпису в картці кварталу)
 // Тип забудови в експорт не входить: його рахує prepare_web.py з <id>_osm_cls.tif.
 // Файли падають у папку uhi_web на Google Drive під іменами web_<id>.tif.
 var MIN_NIGHT_N = 5;
 if (RUN_WEB_EXPORTS) {
   Object.keys(CITIES).forEach(function (n) {
-    var R = RES[n], g = WEB_GRID[R.c.id];
-    if (!g) { print('Немає WEB_GRID для ' + R.c.id + ', пропускаю'); return; }
+    var R = RES[n], g = R.c.grid;
+    if (WEB_EXPORT_IDS && WEB_EXPORT_IDS.indexOf(R.c.id) < 0) return;
+    print('Сітка web_' + R.c.id + ': ' + g.crs + ', x0 ' + g.x0 + ', y0 ' + g.y0 + ', ' + g.w + '×' + g.h);
     var web = ee.Image.cat([
       R.dT.rename('dT_day'),
       R.ecoDT.updateMask(R.ecoN.gte(MIN_NIGHT_N)).rename('dT_night'),
@@ -316,6 +346,8 @@ function show(name) {
     'UTFVI: екологічна оцінка (0 відмінна … 5 найгірша)', false);
   Map.addLayer(R.rural.selfMask().clip(R.roi), {palette: ['#00aa00']},
     'Сільський еталон (контроль)', false);
+  Map.addLayer(ee.Image().paint(ee.FeatureCollection([ee.Feature(R.roi)]), 0, 2),
+    {palette: ['#00ffff']}, 'Коло аналізу (r = ' + R.c.r + ' км)', true);
 }
 
 var select = ui.Select({items: Object.keys(CITIES), value: 'Івано-Франківськ',
@@ -329,3 +361,6 @@ show('Івано-Франківськ');
 // • Після запуску відкрийте вкладку Tasks і натисніть Run для двох експортів.
 // • Таблиця uhi_cities_summary — основа порівняння міст; uhi_cities_samples — для регресії/GWR у Python.
 // • Київ: за потреби зменшіть N_SAMPLE або r, якщо Earth Engine повідомляє про перевищення пам'яті.
+// • Сайт: у Tasks запустіть web_dnipro і web_kharkiv; файли з папки uhi_web на Drive передайте для prepare_web.py.
+// • Нове місто: додайте запис у CITIES (і в WEB_EXPORT_IDS), сітка для сайту обчислиться сама.
+//   Ті самі центр і радіус задайте в osm_buildings.py; потім додайте id в OSM_READY / CLS_READY.
