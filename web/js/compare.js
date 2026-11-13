@@ -8,11 +8,20 @@ const L = cfg.layers;
 const NS = 'http://www.w3.org/2000/svg';
 // кольори перевірено на розрізнення при порушеннях колірного зору (dataviz validate_palette)
 const C = { day: '#e0763a', night: '#6a4fa3', apt: L.bld_type.colors[0], priv: L.bld_type.colors[1] };
-// later — міста, додані після статті: позначаються зірочкою; note — застереження для міста
-const cities = meta.cities.map(c => ({ id: c.id, name: c.name + (c.later ? '*' : ''), plain: c.name,
-                                       later: c.later, note: c.note, ...c.stats }))
-  .sort((a, b) => b.mean_dt_day - a.mean_dt_day);
-const withType = cities.filter(c => c.dt_day_apt != null && c.dt_day_priv != null);
+// note — застереження для міста
+// dayOk = false: денну ΔT міста не можна порівнювати з іншими (еталон гарячий) — сортується в кінець
+const cities = meta.cities.map(c => {
+  const a = c.article || {}, s = c.stats, ap = a.apt_minus_priv;
+  return { id: c.id, name: c.name, plain: c.name, note: c.note, dayOk: c.dt_day_comparable !== false, ...s,
+    mean_dt_day: a.dT_day ?? s.mean_dt_day, mean_dt_night: a.dT_night_ecostress ?? s.mean_dt_night,
+    mean_ndvi: a.mean_ndvi ?? s.mean_ndvi, r_ndvi: a.r_ndvi_lst ?? s.r_ndvi_dt_day,
+    utfvi_bad: a.share_utfvi_bad_pct ?? 100 * s.share_utfvi.slice(3).reduce((x, y) => x + y, 0),
+    ref: a.rural_ref_lst_c, scenes: a.landsat_scenes, frames: a.ecostress_frames_median,
+    diff: ap ? { day: ap.day, dayCI: ap.day_ci, night: ap.night, nightCI: ap.night_ci, nA: ap.n_apt, nP: ap.n_priv }
+             : (s.dt_day_apt != null ? { day: s.dt_day_apt - s.dt_day_priv, night: s.dt_night_apt - s.dt_night_priv } : null) };
+})
+  .sort((a, b) => (b.dayOk - a.dayOk) || (b.mean_dt_day - a.mean_dt_day));
+const withType = cities.filter(c => c.diff);
 
 const tip = document.getElementById('tip');
 const signed = (v, d = 1) => v == null ? '—' : (v > 0 ? '+' : '') + fmt(v, d);
@@ -61,15 +70,15 @@ function legend(id, items) {
 
 // ---------- Головні цифри ----------
 function headline() {
-  const byDay = cities[0];
+  const byDay = cities.filter(c => c.dayOk)[0];
   const byNight = [...cities].sort((a, b) => b.mean_dt_night - a.mean_dt_night)[0];
-  const diffs = withType.map(c => c.dt_day_apt - c.dt_day_priv);
-  const allWarmer = diffs.every(d => d > 0);
+  const diffs = withType.map(c => c.diff.day);
+  const allSig = withType.every(c => c.diff.dayCI && c.diff.dayCI[0] > 0);
   const tiles = [
     ['Найсильніший денний острів', `${signed(byDay.mean_dt_day)} °C`, byDay.plain],
     ['Найменше охолодження вночі', `${signed(byNight.mean_dt_night)} °C`, byNight.plain],
     ['Багатоповерхівки тепліші за приватний сектор', `${fmt(Math.min(...diffs), 1)}–${fmt(Math.max(...diffs), 1)} °C`,
-     `удень, ${allWarmer ? 'у всіх' : 'у'} ${withType.length} містах з даними про тип забудови`]
+     `удень, у ${withType.length} містах${allSig ? '; 95 % довірчий інтервал скрізь вищий за нуль' : ''}`]
   ];
   document.getElementById('headline').innerHTML = tiles.map(([l, v, s]) =>
     `<div class="stat"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
@@ -82,6 +91,9 @@ function chartDT() {
   const W = svg.clientWidth || 800, labW = W < 480 ? 122 : 136, padR = 44;
   const bh = 12, gap = 4, rowH = bh * 2 + gap + 18, top = 6, H = top + cities.length * rowH + 22;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const defs = svgEl('defs', {}, svg), pat = svgEl('pattern', { id: 'hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  svgEl('rect', { width: 6, height: 6, fill: '#e8e2d8' }, pat);
+  svgEl('line', { x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#b9b0a3', 'stroke-width': 2 }, pat);
   const max = niceMax(Math.max(...cities.map(c => Math.max(c.mean_dt_day, c.mean_dt_night))));
   const min = niceMin(Math.min(...cities.map(c => Math.min(c.mean_dt_day, c.mean_dt_night))));
   const x = v => labW + (W - labW - padR) * (v - min) / (max - min);
@@ -95,10 +107,14 @@ function chartDT() {
     text(svg, 0, y + bh + 4, c.name, { 'dominant-baseline': 'middle', 'font-weight': 600 });
     [['day', c.mean_dt_day, 'удень'], ['night', c.mean_dt_night, 'уночі']].forEach(([k, v, lab], j) => {
       const yy = y + j * (bh + gap);
-      const m = v >= 0 ? bar(svg, x(0), x(v), yy, bh, C[k]) : barLeft(svg, x(v), x(0), yy, bh, C[k]);
-      text(svg, v >= 0 ? x(v) + 6 : x(v) - 6, yy + bh / 2 + 1, signed(v),
-           { 'dominant-baseline': 'middle', class: 'val', 'text-anchor': v >= 0 ? 'start' : 'end' });
-      hover(m, `<b>${c.name}</b>, ${lab}<br>ΔT ${signed(v, 2)} °C`);
+      const off = k === 'day' && !c.dayOk;          // непорівнянна денна ΔT: сіра смуга з поясненням
+      const fill = off ? 'url(#hatch)' : C[k];
+      const m = v >= 0 ? bar(svg, x(0), x(v), yy, bh, fill) : barLeft(svg, x(v), x(0), yy, bh, fill);
+      const lbl = signed(v) + (off ? '  не порівнюється' : '');
+      text(svg, v >= 0 ? x(v) + 6 : x(v) - 6, yy + bh / 2 + 1, lbl,
+           { 'dominant-baseline': 'middle', class: 'val', 'text-anchor': v >= 0 ? 'start' : 'end', ...(off ? { fill: '#6b655c' } : {}) });
+      hover(m, `<b>${c.plain}</b>, ${lab}<br>ΔT ${signed(v, 2)} °C` +
+               (off ? '<br>Заміський еталон такий самий гарячий, як забудова, — з іншими містами не порівнювати.' : ''));
     });
   });
   svgEl('line', { x1: x(0), x2: x(0), y1: top, y2: H - 20, class: 'base' }, svg);
@@ -141,40 +157,35 @@ function chartUTFVI() {
   box.style.setProperty('--lw', innerWidth < 480 ? '104px' : '136px');
 }
 
-// ---------- 3. Багатоповерхівки vs приватний сектор (гантелі, дві панелі) ----------
+// ---------- 3. Різниця «багатоповерхівки − приватний сектор» з 95 % ДІ ----------
 function chartType() {
   const svg = document.getElementById('ch-type');
   svg.innerHTML = svg.querySelector('title').outerHTML;
-  const W = svg.clientWidth || 800, narrow = W < 620;
-  const labW = narrow ? 122 : 136, rowH = 30, top = 26;
-  const facets = [['dt_day', 'Удень'], ['dt_night', 'Уночі']];
-  const panelH = top + withType.length * rowH + 24;
-  const H = narrow ? panelH * 2 + 12 : panelH;
+  const W = svg.clientWidth || 800, labW = W < 480 ? 122 : 136, padR = 56;
+  const gap = 14, rowH = 2 * gap + 18, top = 6, rows = withType, H = top + rows.length * rowH + 22;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
-  const max = niceMax(Math.max(...withType.flatMap(c => [c.dt_day_apt, c.dt_night_apt])));
-  const panelW = narrow ? W - labW : (W - labW - 24) / 2;
-  facets.forEach(([k, title], f) => {
-    const ox = narrow ? labW : labW + f * (panelW + 24), oy = narrow ? f * (panelH + 12) : 0;
-    const x = v => ox + (panelW - 40) * v / max;
-    const g = svgEl('g', { class: 'grid' }, svg), ax = svgEl('g', { class: 'axis' }, svg);
-    text(svg, ox, oy + 12, title, { 'font-weight': 600 });
-    for (let t = 0; t <= max; t++) {
-      svgEl('line', { x1: x(t), x2: x(t), y1: oy + top - 6, y2: oy + panelH - 20 }, g);
-      text(ax, x(t), oy + panelH - 6, fmt(t, 0), { 'text-anchor': 'middle', class: 'tick' });
-    }
-    withType.forEach((c, i) => {
-      const y = oy + top + i * rowH + rowH / 2 - 4;
-      if (f === 0 || narrow) text(svg, 0, y, c.name, { 'dominant-baseline': 'middle', 'font-weight': 600 });
-      const a = c[`${k}_apt`], p = c[`${k}_priv`];
-      if (a == null || p == null) return;
-      svgEl('line', { x1: x(p), x2: x(a), y1: y, y2: y, stroke: '#c9c0b3', 'stroke-width': 2, 'stroke-linecap': 'round' }, svg);
-      for (const [v, col, nm, n] of [[p, C.priv, 'приватна садибна', c.n_priv], [a, C.apt, 'багатоповерхова', c.n_apt]]) {
-        const dot = svgEl('circle', { cx: x(v), cy: y, r: 5.5, fill: col, stroke: '#fffdf9', 'stroke-width': 2, class: 'mark' }, svg);
-        const hit = svgEl('circle', { cx: x(v), cy: y, r: 11, fill: 'transparent' }, svg);
-        hover(hit, `<b>${c.name}</b>, ${title.toLowerCase()}<br>${nm} забудова: ΔT ${signed(v, 2)} °C<br>${n} кварталів`);
-        dot.style.pointerEvents = 'none';
-      }
-      text(svg, x(a) + 10, y + 1, `+${fmt(a - p, 1)}`, { 'dominant-baseline': 'middle', class: 'val', fill: '#6b655c' });
+  const hi = Math.max(...rows.flatMap(c => [c.diff.dayCI?.[1] ?? c.diff.day, c.diff.nightCI?.[1] ?? c.diff.night]));
+  const lo = Math.min(0, ...rows.flatMap(c => [c.diff.dayCI?.[0] ?? c.diff.day, c.diff.nightCI?.[0] ?? c.diff.night]));
+  const max = niceMax(hi), min = lo < 0 ? niceMin(lo) : 0;
+  const x = v => labW + (W - labW - padR) * (v - min) / (max - min);
+  const g = svgEl('g', { class: 'grid' }, svg), ax = svgEl('g', { class: 'axis' }, svg);
+  for (let t = min; t <= max; t++) {
+    svgEl('line', { x1: x(t), x2: x(t), y1: top, y2: H - 20 }, g);
+    text(ax, x(t), H - 6, fmt(t, 0), { 'text-anchor': 'middle', class: 'tick' });
+  }
+  svgEl('line', { x1: x(0), x2: x(0), y1: top, y2: H - 20, class: 'base' }, svg);
+  rows.forEach((c, i) => {
+    const y = top + i * rowH + 8;
+    text(svg, 0, y + gap / 2, c.name, { 'dominant-baseline': 'middle', 'font-weight': 600 });
+    [['day', 'удень'], ['night', 'уночі']].forEach(([k, lab], j) => {
+      const yy = y + j * gap, v = c.diff[k], ci = c.diff[k + 'CI'];
+      if (ci) svgEl('line', { x1: x(ci[0]), x2: x(ci[1]), y1: yy, y2: yy, stroke: C[k], 'stroke-width': 2, 'stroke-linecap': 'round', opacity: .55 }, svg);
+      svgEl('circle', { cx: x(v), cy: yy, r: 5, fill: C[k], stroke: '#fffdf9', 'stroke-width': 2 }, svg);
+      text(svg, x(ci ? ci[1] : v) + 8, yy + 1, `+${fmt(v, 1)}`, { 'dominant-baseline': 'middle', class: 'val' });
+      const hit = svgEl('rect', { x: x(ci ? ci[0] : v) - 8, y: yy - 7, width: Math.max(16, x(ci ? ci[1] : v) - x(ci ? ci[0] : v) + 16), height: 14, fill: 'transparent' }, svg);
+      hover(hit, `<b>${c.plain}</b>, ${lab}<br>багатоповерхівки тепліші на ${fmt(v, 2)} °C` +
+                 (ci ? `<br>95 % ДІ: ${fmt(ci[0], 2)}…${fmt(ci[1], 2)} °C` : '') +
+                 (c.diff.nA ? `<br>${c.diff.nA} і ${c.diff.nP} кварталів у вибірці` : ''));
     });
   });
 }
@@ -182,26 +193,25 @@ function chartType() {
 // ---------- 4. NDVI ----------
 function ndvi() {
   document.getElementById('ndvi').innerHTML = cities.map(c =>
-    `<div class="stat"><div class="l">${c.name}</div><div class="v">r = ${fmt(c.r_ndvi_dt_day, 2)}</div><div class="s">NDVI сер. ${fmt(c.mean_ndvi, 2)}</div></div>`).join('');
+    `<div class="stat"><div class="l">${c.name}</div><div class="v">r = ${fmt(c.r_ndvi, 2)}</div><div class="s">NDVI сер. ${fmt(c.mean_ndvi, 2)}</div></div>`).join('');
 }
 
 // ---------- Таблиця ----------
 function table() {
+  const ci = v => v ? ` <span class="ci">[${fmt(v[0], 2)}; ${fmt(v[1], 2)}]</span>` : '';
   document.querySelector('#tbl tbody').innerHTML = cities.map(c => `<tr>
-    <td>${c.name}</td><td>${signed(c.mean_dt_day, 2)}</td><td>${signed(c.mean_dt_night, 2)}</td>
-    <td>${c.n_urban.toLocaleString('uk-UA')}</td><td>${fmt(100 * c.share_utfvi.slice(3).reduce((a, b) => a + b, 0), 1)}</td>
-    <td>${num(c.mean_ndvi, 2)}</td>
-    <td>${c.dt_day_apt == null ? '—' : `${signed(c.dt_day_apt, 1)} / ${signed(c.dt_night_apt, 1)}`}</td>
-    <td>${c.dt_day_priv == null ? '—' : `${signed(c.dt_day_priv, 1)} / ${signed(c.dt_night_priv, 1)}`}</td>
-    <td>${num(c.r_ndvi_dt_day, 2)}</td></tr>`).join('');
+    <td>${c.name}</td>
+    <td>${signed(c.mean_dt_day, 2)}${c.dayOk ? '' : ' <span class="ci">не порівн.</span>'}</td><td>${signed(c.mean_dt_night, 2)}</td>
+    <td>${num(c.ref, 1)}</td><td>${c.scenes ?? '—'}</td><td>${c.frames ?? '—'}</td>
+    <td>${fmt(c.utfvi_bad, 1)}</td><td>${num(c.mean_ndvi, 2)}</td>
+    <td>${c.diff ? '+' + fmt(c.diff.day, 2) + ci(c.diff.dayCI) : '—'}</td>
+    <td>${c.diff ? '+' + fmt(c.diff.night, 2) + ci(c.diff.nightCI) : '—'}</td>
+    <td>${num(c.r_ndvi, 2)}</td></tr>`).join('');
 }
 
 // ---------- Застереження по містах ----------
 function notes() {
-  const later = cities.filter(c => c.later).map(c => c.plain);
   const items = [];
-  if (later.length) items.push(`<li><b>*</b> ${later.join(' і ')} додано після основного дослідження; ці міста не входять до наукової статті${
-    cities.some(c => c.later && c.dt_day_apt == null) ? ', а тип забудови для них ще не розраховано' : ''}.</li>`);
   for (const c of cities.filter(c => c.note)) items.push(`<li><b>${c.plain}.</b> ${c.note}</li>`);
   const box = document.getElementById('notes');
   box.innerHTML = items.join('');
@@ -210,7 +220,7 @@ function notes() {
 
 legend('lg-dt', [[C.day, 'Удень'], [C.night, 'Уночі']]);
 legend('lg-utfvi', L.utfvi.colors.map((c, i) => [c, `${L.utfvi.classnames[i]} (${L.utfvi.labels[i]})`]));
-legend('lg-type', [[C.apt, 'Багатоповерхова житлова', true], [C.priv, 'Приватна садибна', true]]);
+legend('lg-type', [[C.day, 'Удень', true], [C.night, 'Уночі', true]]);
 headline(); ndvi(); table(); notes();
 const draw = () => { chartDT(); chartUTFVI(); chartType(); };
 draw();

@@ -3,7 +3,7 @@ import json, sys, numpy as np, rasterio
 from rasterio.warp import transform
 sys.path.insert(0, 'scripts'); import prepare_web as pw
 pw.RAW = pw.ROOT / ('data/raw_synth' if 'synth' in sys.argv else 'data/raw')
-if 'synth' in sys.argv: pw.CITIES = {k: v for k, v in pw.CITIES.items() if k not in pw.LATER}
+if 'synth' in sys.argv: pw.CITIES = {k: v for k, v in pw.CITIES.items() if k not in ('dnipro', 'kharkiv')}
 rng = np.random.default_rng(7); out = []
 for cid in pw.CITIES:
     b, prof, _ = pw.load_city(cid); t = prof['transform']; H, W = prof['height'], prof['width']

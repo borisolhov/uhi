@@ -2,75 +2,87 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Острови тепла українських міст</title>
-  <meta name="description" content="Карта островів тепла Києва, Харкова, Дніпра, Львова, Івано-Франківська, Чернівців і Ужгорода за супутниковими даними: денний і нічний перегрів, UTFVI, рослинність, тип забудови.">
+  <meta name="description" content="Де влітку перегрівається забудова семи українських міст: карта денного й нічного перегріву поверхні за супутниковими даними Landsat і ECOSTRESS, з поясненнями для кожного кварталу.">
+  <script>
+    // старі посилання на карту (borisolhov.github.io/uhi/#city=...) ведуть на map.html
+    if (/(^|[#&])city=/.test(location.hash)) location.replace('map.html' + location.hash);
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <div id="banner" class="banner" hidden></div>
+<body class="home">
+  <div class="page wide">
+    <header class="brand">
+      <p class="eyebrow">Супутникова діагностика · літо</p>
+      <p class="home-line"><span>Острови тепла українських міст</span></p>
+      <nav class="nav">
+        <a href="index.html" aria-current="page">Головна</a>
+        <a href="map.html">Карта</a>
+        <a href="compare.html">Порівняння міст</a>
+        <a href="methodology.html">Методика</a>
+      </nav>
+    </header>
 
-  <div class="layout">
-    <aside id="panel" class="panel" aria-label="Панель керування">
-      <button id="sheetHandle" class="sheet-handle" aria-expanded="false" aria-controls="panelBody">
-        <span class="grip" aria-hidden="true"></span>
-        <span id="sheetSummary" class="sheet-summary"></span>
-      </button>
-
-      <div id="panelBody" class="panel-body">
-        <header class="brand">
-          <p class="eyebrow">Супутникова діагностика · літо</p>
-          <h1>Острови тепла українських міст</h1>
-          <nav class="nav">
-            <a href="index.html" aria-current="page">Карта</a>
-            <a href="compare.html">Порівняння міст</a>
-            <a href="methodology.html">Методика</a>
-          </nav>
-        </header>
-
-        <section class="block">
-          <h2 class="label" id="cityLabel">Місто</h2>
-          <div id="cities" class="chips" role="radiogroup" aria-labelledby="cityLabel"></div>
-        </section>
-
-        <section class="block">
-          <form id="search" class="search" role="search">
-            <input id="q" type="search" placeholder="Адреса, наприклад: вул. Незалежності, 10" autocomplete="off" aria-label="Пошук адреси">
-            <button type="submit" aria-label="Знайти">Знайти</button>
-          </form>
-          <ul id="results" class="results" hidden></ul>
-          <p class="hint">Або просто клацніть по карті.</p>
-        </section>
-
-        <section class="block">
-          <h2 class="label" id="layerLabel">Шар</h2>
-          <div id="layers" class="layers" role="radiogroup" aria-labelledby="layerLabel"></div>
-          <div id="legend" class="legend" aria-live="polite"></div>
-          <label class="opacity">
-            <span>Прозорість шару</span>
-            <input id="opacity" type="range" min="0" max="1" step="0.05" value="0.75">
-          </label>
-        </section>
-
-        <section id="info" class="block info" aria-live="polite">
-          <p class="placeholder">Оберіть точку на карті, щоб побачити показники кварталу.</p>
-        </section>
-
-        <footer class="note">
-          <p>Показано температуру <b>поверхні</b> (дахи, асфальт, газони) за літніми супутниковими знімками, а не температуру повітря. Одиниця аналізу — квартал 100 × 100 м, окремі будинки й вулиці не розрізняються. Це наукова діагностика, а не інженерна оцінка.</p>
-        </footer>
+    <section class="hero">
+      <div class="hero-text">
+        <h1>Де влітку місто нагрівається найбільше</h1>
+        <p class="lead">Супутники щоліта знімають температуру дахів, асфальту й газонів. Ми порівняли її з заміською місцевістю довкола семи українських міст і показали, які квартали перегріваються вдень, а які не встигають охолонути вночі.</p>
+        <div class="cta">
+          <a class="btn primary" href="map.html">Відкрити карту</a>
+          <a class="btn" href="compare.html">Порівняти міста</a>
+        </div>
       </div>
-    </aside>
+      <figure class="hero-fig" aria-hidden="true">
+        <img id="heroImg" alt="" width="320" height="320">
+        <figcaption id="heroCap"></figcaption>
+      </figure>
+    </section>
 
-    <main id="map" class="map" aria-label="Карта"></main>
+    <section>
+      <h2>Оберіть місто</h2>
+      <p class="sub">Середній перегрів забудови порівняно з заміською місцевістю, °C. Натисніть, щоб відкрити місто на карті.</p>
+      <div id="cityCards" class="city-cards"></div>
+    </section>
+
+    <section>
+      <h2>Що можна побачити на карті</h2>
+      <div class="features">
+        <div class="feature"><span class="sw" style="background:#e8573a"></span><h3>ΔT вдень</h3><p>Наскільки поверхня кварталу тепліша за поля й луки довкола міста в літній полудень.</p></div>
+        <div class="feature"><span class="sw" style="background:#7a59ab"></span><h3>ΔT вночі</h3><p>Чи встигає квартал охолонути вночі. Тепла ніч важче переноситься, ніж спекотний день.</p></div>
+        <div class="feature"><span class="sw" style="background:#f6b26b"></span><h3>UTFVI</h3><p>Гарячі точки всередині самого міста: шість класів від «відмінно» до «найгірше».</p></div>
+        <div class="feature"><span class="sw" style="background:#3f9a4f"></span><h3>NDVI і тип забудови</h3><p>Скільки в кварталі зелені і що там переважає: багатоповерхівки, приватні будинки чи промзона.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Як користуватися</h2>
+      <ol class="steps">
+        <li><b>Оберіть місто й шар</b> у панелі ліворуч (на телефоні — у шторці знизу).</li>
+        <li><b>Клацніть по карті</b> або знайдіть адресу. З'явиться значення в цій точці.</li>
+        <li><b>Прочитайте картку кварталу</b>: усі показники для квадрата 100 × 100 м із поясненням простими словами.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Що важливо знати</h2>
+      <ul class="caveats">
+        <li>Це температура <b>поверхні</b>, а не повітря: вона показує, де накопичується тепло, але не «скільки градусів на вулиці».</li>
+        <li>Одиниця — квартал <b>100 × 100 м</b>; окремі будинки й вулиці не розрізняються.</li>
+        <li>Дані лише за <b>літо</b> (травень–вересень). Денні знімки близько полудня, нічні — між 22:00 і 06:00.</li>
+        <li>Сайт показує <b>діагностику</b>: де ризики є, а де їх немає. Висновки й рішення лишаються за вами.</li>
+      </ul>
+      <p><a href="methodology.html">Як це пораховано →</a></p>
+    </section>
+
+    <footer class="home-foot">
+      <p>Дослідження й сайт: Ольхов Борис, кафедра екології ІФНТУНГ. Код і дані: <a href="https://github.com/borisolhov/uhi">github.com/borisolhov/uhi</a>.</p>
+      <p>Дані: Landsat 8/9 (USGS/NASA), ECOSTRESS (NASA), ESA WorldCover, GHSL (JRC), Dynamic World (Google, WRI), будівлі © учасники OpenStreetMap (ODbL).</p>
+    </footer>
   </div>
-
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script>
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/home.js"></script>
 </body>
 </html>

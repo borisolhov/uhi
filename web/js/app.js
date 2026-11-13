@@ -30,6 +30,8 @@ if (meta.cities.some(c => c.synthetic)) {
 const hash = new URLSearchParams(location.hash.slice(1));
 state.city = meta.cities.find(c => c.id === hash.get('city')) || meta.cities[0];
 if (state.order.includes(hash.get('layer'))) state.layer = hash.get('layer');
+const startPt = (hash.get('pt') || '').split(',').map(Number);   // поширене посилання на точку
+const MOBILE = matchMedia('(max-width: 760px)');
 
 // ---------- Карта ----------
 const map = new maplibregl.Map({
@@ -55,7 +57,23 @@ map.on('load', () => {
   map.addSource('cell', { type: 'geojson', data: emptyFC() });
   map.addLayer({ id: 'cell-halo', type: 'line', source: 'cell', paint: { 'line-color': '#fff', 'line-width': 5 } });
   map.addLayer({ id: 'cell', type: 'line', source: 'cell', paint: { 'line-color': '#1f1d1a', 'line-width': 2 } });
+  if (startPt.length === 2 && startPt.every(Number.isFinite)) {
+    map.jumpTo({ center: [startPt[1], startPt[0]], zoom: 14 });
+    selectPoint(startPt[1], startPt[0], { quiet: true });
+  }
 });
+
+// Коротке повідомлення внизу екрана (телефон)
+let toastTimer;
+function toast(msg) {
+  let t = $('toast');
+  if (!t) { t = el('div', 'toast'); t.id = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 3200);
+}
+
+// Спливна підказка біля точки кліку: значення поточного шару + перехід до повної картки
+const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: false, maxWidth: '260px', offset: 10, className: 'pt-popup' });
 
 map.on('click', e => selectPoint(e.lngLat.lng, e.lngLat.lat));
 map.getCanvas().style.cursor = 'crosshair';
@@ -119,8 +137,14 @@ function renderLegend() {
 }
 
 function updateSummary() {
-  $('sheetSummary').textContent = `${state.city.name} · ${state.layers[state.layer].title}`;
-  history.replaceState(null, '', `#city=${state.city.id}&layer=${state.layer}`);
+  let sum = `${state.city.name} · ${state.layers[state.layer].title}`;
+  if (state.cell) {                       // у згорнутій шторці видно значення вибраної точки
+    const [val, txt] = describe(state.layer, state.cell.v[state.layer]);
+    sum += ': ' + (val || txt);
+  }
+  $('sheetSummary').textContent = sum;
+  const pt = state.cell ? `&pt=${state.cell.lat.toFixed(5)},${state.cell.lon.toFixed(5)}` : '';
+  history.replaceState(null, '', `#city=${state.city.id}&layer=${state.layer}${pt}`);
 }
 
 function setCity(c) {
@@ -136,7 +160,7 @@ function setCity(c) {
 function setLayer(k) {
   state.layer = k;
   renderLayers(); renderLegend(); updateSummary(); refreshImage();
-  if (state.cell) showCell();
+  if (state.cell) { showCell(); showPopup(); }
 }
 
 function refreshImage() {
@@ -145,19 +169,17 @@ function refreshImage() {
 }
 
 // ---------- Вибір точки ----------
-async function selectPoint(lon, lat) {
+async function selectPoint(lon, lat, opts = {}) {
   const c = state.city;
   const cell = cellOf(proj4, c, lon, lat);
-  if (!cell) {
+  const v = cell ? valuesAt(c, await loadValues(c), cell) : null;
+  if (!cell || (v.dt_day === null && v.ndvi === null)) {
     clearSelection();
-    $('info').innerHTML = `<p class="out">Ця точка поза зоною аналізу для міста ${c.name}. Оберіть місто в списку або клацніть ближче до центру.</p>`;
-    return;
-  }
-  const data = await loadValues(c);
-  const v = valuesAt(c, data, cell);
-  if (v.dt_day === null && v.ndvi === null) {
-    clearSelection();
-    $('info').innerHTML = `<p class="out">Ця точка поза колом аналізу для міста ${c.name}.</p>`;
+    const msg = `Ця точка поза зоною аналізу для міста ${c.name}. Клацніть ближче до центру або оберіть інше місто.`;
+    $('info').innerHTML = `<p class="out">${msg}</p>`;
+    if (MOBILE.matches) toast(msg);
+    else popup.setLngLat([lon, lat]).setDOMContent(el('p', 'pp-out', msg)).addTo(map);
+    updateSummary();
     return;
   }
   state.cell = { ...cell, lon, lat, v };
@@ -166,10 +188,67 @@ async function selectPoint(lon, lat) {
     features: [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: [cellPolygon(proj4, c, cell)] } }]
   });
   showCell();
-  if (matchMedia('(max-width: 760px)').matches) {
+  updateSummary();
+  if (MOBILE.matches) {
+    // на телефоні картка відкривається в шторці, а карта зсувається, щоб точка лишилась видимою над нею
+    popup.remove();
     toggleSheet(true);
-    $('info').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    requestAnimationFrame(() => {
+      scrollToCard($('panelBody'), opts.quiet);
+      const sheetH = $('panel').getBoundingClientRect().height;
+      map.easeTo({ center: [lon, lat], padding: { top: 0, bottom: sheetH, left: 0, right: 0 }, duration: 400 });
+    });
+  } else {
+    showPopup();
+    revealCard(opts.quiet);
   }
+}
+
+// Підказка біля точки: поточний шар великим числом + кнопка до повної картки
+function showPopup() {
+  if (!state.cell || MOBILE.matches) return;
+  const { v, lon, lat } = state.cell, k = state.layer, L = state.layers[k];
+  const [val, txt, color] = describe(k, v[k]);
+  const box = el('div', 'pp');
+  const head = el('div', 'pp-head');
+  const dot = el('span', 'pp-dot'); dot.style.background = color;
+  head.append(dot, el('span', 'pp-name', L.title));
+  box.append(head, el('div', 'pp-val', val || txt), el('div', 'pp-txt', val ? txt : ''));
+  const more = el('button', 'pp-more', 'Усі показники кварталу →');
+  more.onclick = () => revealCard(false, true);
+  box.append(more);
+  popup.setLngLat([lon, lat]).setDOMContent(box).addTo(map);
+}
+
+function scrollToCard(scroller, quiet) {
+  const top = scroller.scrollTop + $('info').getBoundingClientRect().top - scroller.getBoundingClientRect().top - 10;
+  scroller.scrollTo({ top, behavior: quiet ? 'auto' : 'smooth' });
+}
+
+// Прокрутити панель до картки кварталу й коротко підсвітити її
+function revealCard(quiet, force) {
+  const info = $('info'), panel = $('panel');
+  const r = info.getBoundingClientRect(), pr = panel.getBoundingClientRect();
+  const visible = r.top >= pr.top && r.top < pr.bottom - 120;
+  if (!visible || force) scrollToCard(panel, quiet);
+  if (!quiet) { info.classList.remove('flash'); void info.offsetWidth; info.classList.add('flash'); }
+}
+
+// [значення, пояснення, колір класу] для показника k
+function describe(k, x) {
+  const L = state.layers[k];
+  const i = classIndex(L, x), color = i >= 0 ? L.colors[i] : 'transparent';
+  if (k === 'bld_type' && x === 0) return ['', 'квартал поза зоною, для якої завантажено дані OpenStreetMap', 'transparent'];
+  if (x === null) {
+    return ['', k === 'dt_night' ? 'менше 5 придатних нічних знімків для цього кварталу'
+          : k === 'bld_type' ? (state.city.osm === false ? 'дані OpenStreetMap для цього міста ще не оброблено'
+                                                          : 'будівель у кварталі немає')
+          : 'немає даних для цього кварталу', 'transparent'];
+  }
+  if (L.kind === 'categories') return ['', L.labels[i] ?? '—', color];
+  let txt = L.explain[i] + (L.classnames ? ` (клас «${L.classnames[i]}»)` : '');
+  if (k === 'dt_day' && state.city.dt_day_comparable === false) txt += '; для цього міста денна ΔT не порівнюється з іншими містами';
+  return [(k.startsWith('dt_') && x > 0 ? '+' : '') + fmt(x, L.decimals) + (L.unit ? ' ' + L.unit : ''), txt, color];
 }
 
 function showCell() {
@@ -181,36 +260,32 @@ function showCell() {
   box.append(h, el('p', 'meta', `${lat.toFixed(5)}° пн. ш., ${lon.toFixed(5)}° сх. д.`));
 
   for (const k of state.order) {
-    const L = state.layers[k], x = v[k];
-    const row = el('div', 'metric' + (k === state.layer ? ' active' : '') + (x === null ? ' empty' : ''));
-    const dot = el('span', 'dot');
-    const i = classIndex(L, x);
-    dot.style.background = i >= 0 ? L.colors[i] : 'transparent';
-    let val, txt;
-    if (k === 'bld_type' && x === 0) {
-      val = 'немає даних'; txt = 'квартал поза зоною, для якої завантажено дані OpenStreetMap';
-    } else if (x === null) {
-      val = 'немає даних';
-      txt = k === 'dt_night' ? 'менше 5 придатних нічних знімків для цього кварталу'
-          : k === 'bld_type' ? (state.city.osm === false ? 'дані OpenStreetMap для цього міста ще не оброблено'
-                                                          : 'будівель у кварталі немає')
-          : 'немає даних для цього кварталу';
-    } else if (L.kind === 'categories') {
-      val = ''; txt = L.labels[i] ?? '—';
-    } else {
-      val = (k.startsWith('dt_') && x > 0 ? '+' : '') + fmt(x, L.decimals) + (L.unit ? ' ' + L.unit : '');
-      txt = L.explain[i] + (L.classnames ? ` (клас «${L.classnames[i]}»)` : '');
-    }
-    if (k === 'bld_type' && x === 0) { row.classList.add('empty'); dot.style.background = 'transparent'; }
-    row.append(dot, el('span', 'name', L.title), el('span', 'val', val), el('span', 'txt', txt));
+    const L = state.layers[k];
+    const [val, txt, color] = describe(k, v[k]);
+    const empty = !val && (v[k] === null || (k === 'bld_type' && v[k] === 0));
+    const row = el('button', 'metric' + (k === state.layer ? ' active' : '') + (empty ? ' empty' : ''));
+    row.type = 'button';
+    row.disabled = !state.city.layers.includes(k);
+    row.title = row.disabled ? '' : `Показати шар «${L.title}» на карті`;
+    const dot = el('span', 'dot'); dot.style.background = color;
+    row.append(dot, el('span', 'name', L.title), el('span', 'val', val || (empty ? 'немає даних' : '')), el('span', 'txt', txt));
+    if (!row.disabled) row.onclick = () => setLayer(k);
     box.append(row);
   }
+  const share = el('button', 'share', 'Скопіювати посилання на цю точку');
+  share.type = 'button';
+  share.onclick = async () => {
+    try { await navigator.clipboard.writeText(location.href); share.textContent = 'Посилання скопійовано ✓'; }
+    catch { share.textContent = 'Скопіюйте адресу з рядка браузера'; }
+    setTimeout(() => { share.textContent = 'Скопіювати посилання на цю точку'; }, 2500);
+  };
+  box.append(share);
   if (state.city.note) box.append(el('p', 'city-note', state.city.note));
-  if (state.city.later) box.append(el('p', 'city-note', `${state.city.name} додано після основного дослідження; місто не входить до наукової статті.`));
 }
 
 function clearSelection() {
   state.cell = null;
+  popup.remove();
   map.getSource('cell')?.setData(emptyFC());
   $('info').innerHTML = '<p class="placeholder">Оберіть точку на карті, щоб побачити показники кварталу.</p>';
 }

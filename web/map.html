@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Острови тепла українських міст</title>
+  <meta name="description" content="Карта островів тепла Києва, Харкова, Дніпра, Львова, Івано-Франківська, Чернівців і Ужгорода за супутниковими даними: денний і нічний перегрів, UTFVI, рослинність, тип забудови.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="banner" class="banner" hidden></div>
+
+  <div class="layout">
+    <aside id="panel" class="panel" aria-label="Панель керування">
+      <button id="sheetHandle" class="sheet-handle" aria-expanded="false" aria-controls="panelBody">
+        <span class="grip" aria-hidden="true"></span>
+        <span id="sheetSummary" class="sheet-summary"></span>
+      </button>
+
+      <div id="panelBody" class="panel-body">
+        <header class="brand">
+          <p class="eyebrow">Супутникова діагностика · літо</p>
+          <h1><a class="home-link" href="index.html" title="На головну"><svg class="home-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 9.2 10 3.5l7 5.7V16a1 1 0 0 1-1 1h-3.5v-4.5h-5V17H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>Острови тепла українських міст</span></a></h1>
+          <nav class="nav">
+          <a href="index.html">Головна</a>
+          <a href="map.html" aria-current="page">Карта</a>
+          <a href="compare.html">Порівняння міст</a>
+          <a href="methodology.html">Методика</a>
+          </nav>
+        </header>
+
+        <section class="block">
+          <h2 class="label" id="cityLabel">Місто</h2>
+          <div id="cities" class="chips" role="radiogroup" aria-labelledby="cityLabel"></div>
+        </section>
+
+        <section class="block">
+          <form id="search" class="search" role="search">
+            <input id="q" type="search" placeholder="Адреса, наприклад: вул. Незалежності, 10" autocomplete="off" aria-label="Пошук адреси">
+            <button type="submit" aria-label="Знайти">Знайти</button>
+          </form>
+          <ul id="results" class="results" hidden></ul>
+          <p class="hint">Або просто клацніть по карті.</p>
+        </section>
+
+        <section class="block">
+          <h2 class="label" id="layerLabel">Шар</h2>
+          <div id="layers" class="layers" role="radiogroup" aria-labelledby="layerLabel"></div>
+          <div id="legend" class="legend" aria-live="polite"></div>
+          <label class="opacity">
+            <span>Прозорість шару</span>
+            <input id="opacity" type="range" min="0" max="1" step="0.05" value="0.75">
+          </label>
+        </section>
+
+        <section id="info" class="block info" aria-live="polite">
+          <p class="placeholder">Оберіть точку на карті, щоб побачити показники кварталу.</p>
+        </section>
+
+        <footer class="note">
+          <p>Показано температуру <b>поверхні</b> (дахи, асфальт, газони) за літніми супутниковими знімками, а не температуру повітря. Одиниця аналізу — квартал 100 × 100 м, окремі будинки й вулиці не розрізняються. Це наукова діагностика, а не інженерна оцінка.</p>
+        </footer>
+      </div>
+    </aside>
+
+    <main id="map" class="map" aria-label="Карта"></main>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.11.0/proj4.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

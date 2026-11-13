@@ -1,0 +1,443 @@
+[
+ {
+  "id": "ivano_frankivsk",
+  "name": "Івано-Франківськ",
+  "lon": 24.7111,
+  "lat": 48.9215,
+  "radius_km": 10,
+  "landsat_scenes": 39,
+  "osm_snapshot": "2026-11-08",
+  "osm_tagged_height_pct": 9.7,
+  "built_area_km2": 9.5,
+  "rural_ref_lst_c": 31.79,
+  "mean_lst_built_c": 35.03,
+  "dT_day": 3.24,
+  "dT_day_comparable": true,
+  "dT_night_modis": 1.23,
+  "dT_night_ecostress": 0.94,
+  "ecostress_frames_median": 25,
+  "share_dT_ge6_pct": 12.0,
+  "share_utfvi_bad_pct": 9.7,
+  "mean_ndvi": 0.56,
+  "mean_height_osm_m": 5.9,
+  "r_ndvi_lst": -0.72,
+  "r2_regression": 0.66,
+  "apt_minus_priv": {
+   "day": 2.36,
+   "day_ci": [
+    1.92,
+    2.81
+   ],
+   "night": 1.62,
+   "night_ci": [
+    1.37,
+    1.87
+   ],
+   "n_apt": 142,
+   "n_priv": 625
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": -0.26,
+    "lo": -0.411,
+    "hi": -0.11,
+    "p": 0.001,
+    "n": 142
+   },
+   "night": {
+    "beta": 0.073,
+    "lo": -0.085,
+    "hi": 0.231,
+    "p": 0.366,
+    "n": 142
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 142,
+   "priv": 625,
+   "nonres": 34,
+   "aux": 15,
+   "unk": 223
+  },
+  "n_cells": 1444,
+  "notes": ""
+ },
+ {
+  "id": "kyiv",
+  "name": "Київ",
+  "lon": 30.5234,
+  "lat": 50.4501,
+  "radius_km": 22,
+  "landsat_scenes": 79,
+  "osm_snapshot": "2026-11-08",
+  "osm_tagged_height_pct": 20.2,
+  "built_area_km2": 74.1,
+  "rural_ref_lst_c": 31.22,
+  "mean_lst_built_c": 34.02,
+  "dT_day": 2.8,
+  "dT_day_comparable": true,
+  "dT_night_modis": 2.6,
+  "dT_night_ecostress": 1.65,
+  "ecostress_frames_median": 62,
+  "share_dT_ge6_pct": 13.2,
+  "share_utfvi_bad_pct": 14.0,
+  "mean_ndvi": 0.49,
+  "mean_height_osm_m": 9.2,
+  "r_ndvi_lst": -0.67,
+  "r2_regression": 0.54,
+  "apt_minus_priv": {
+   "day": 1.81,
+   "day_ci": [
+    1.29,
+    2.3
+   ],
+   "night": 1.72,
+   "night_ci": [
+    1.47,
+    1.93
+   ],
+   "n_apt": 327,
+   "n_priv": 573
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": 0.032,
+    "lo": -0.088,
+    "hi": 0.153,
+    "p": 0.598,
+    "n": 327
+   },
+   "night": {
+    "beta": 0.195,
+    "lo": 0.062,
+    "hi": 0.328,
+    "p": 0.004,
+    "n": 327
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 327,
+   "priv": 573,
+   "nonres": 192,
+   "aux": 51,
+   "unk": 324
+  },
+  "n_cells": 1902,
+  "notes": ""
+ },
+ {
+  "id": "lviv",
+  "name": "Львів",
+  "lon": 24.0316,
+  "lat": 49.8397,
+  "radius_km": 13,
+  "landsat_scenes": 63,
+  "osm_snapshot": "2026-11-08",
+  "osm_tagged_height_pct": 14.6,
+  "built_area_km2": 27.4,
+  "rural_ref_lst_c": 28.37,
+  "mean_lst_built_c": 31.32,
+  "dT_day": 2.95,
+  "dT_day_comparable": true,
+  "dT_night_modis": 1.97,
+  "dT_night_ecostress": 1.37,
+  "ecostress_frames_median": 21,
+  "share_dT_ge6_pct": 10.1,
+  "share_utfvi_bad_pct": 10.2,
+  "mean_ndvi": 0.55,
+  "mean_height_osm_m": 7.1,
+  "r_ndvi_lst": -0.7,
+  "r2_regression": 0.57,
+  "apt_minus_priv": {
+   "day": 1.66,
+   "day_ci": [
+    1.03,
+    2.37
+   ],
+   "night": 1.3,
+   "night_ci": [
+    1.13,
+    1.46
+   ],
+   "n_apt": 270,
+   "n_priv": 977
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": -0.055,
+    "lo": -0.194,
+    "hi": 0.084,
+    "p": 0.44,
+    "n": 270
+   },
+   "night": {
+    "beta": 0.004,
+    "lo": -0.13,
+    "hi": 0.138,
+    "p": 0.953,
+    "n": 270
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 270,
+   "priv": 977,
+   "nonres": 90,
+   "aux": 47,
+   "unk": 317
+  },
+  "n_cells": 1944,
+  "notes": ""
+ },
+ {
+  "id": "chernivtsi",
+  "name": "Чернівці",
+  "lon": 25.9358,
+  "lat": 48.2921,
+  "radius_km": 9,
+  "landsat_scenes": 79,
+  "osm_snapshot": "2026-11-08",
+  "osm_tagged_height_pct": 5.0,
+  "built_area_km2": 11.1,
+  "rural_ref_lst_c": 32.47,
+  "mean_lst_built_c": 33.99,
+  "dT_day": 1.53,
+  "dT_day_comparable": true,
+  "dT_night_modis": 1.44,
+  "dT_night_ecostress": 0.69,
+  "ecostress_frames_median": 16,
+  "share_dT_ge6_pct": 3.1,
+  "share_utfvi_bad_pct": 7.5,
+  "mean_ndvi": 0.58,
+  "mean_height_osm_m": 5.3,
+  "r_ndvi_lst": -0.72,
+  "r2_regression": 0.59,
+  "apt_minus_priv": {
+   "day": 1.94,
+   "day_ci": [
+    1.57,
+    2.38
+   ],
+   "night": 0.86,
+   "night_ci": [
+    0.6,
+    1.13
+   ],
+   "n_apt": 88,
+   "n_priv": 992
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": 0.042,
+    "lo": -0.113,
+    "hi": 0.197,
+    "p": 0.595,
+    "n": 88
+   },
+   "night": {
+    "beta": -0.061,
+    "lo": -0.429,
+    "hi": 0.306,
+    "p": 0.744,
+    "n": 88
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 88,
+   "priv": 992,
+   "nonres": 30,
+   "aux": 35,
+   "unk": 351
+  },
+  "n_cells": 1943,
+  "notes": "Еталон відносно теплий (32,5 °C): денна ΔT занижена."
+ },
+ {
+  "id": "uzhhorod",
+  "name": "Ужгород",
+  "lon": 22.2879,
+  "lat": 48.6208,
+  "radius_km": 8,
+  "landsat_scenes": 27,
+  "osm_snapshot": "2026-11-08",
+  "osm_tagged_height_pct": 15.5,
+  "built_area_km2": 7.4,
+  "rural_ref_lst_c": 30.14,
+  "mean_lst_built_c": 32.94,
+  "dT_day": 2.8,
+  "dT_day_comparable": true,
+  "dT_night_modis": 1.93,
+  "dT_night_ecostress": 1.41,
+  "ecostress_frames_median": 20,
+  "share_dT_ge6_pct": 7.2,
+  "share_utfvi_bad_pct": 8.1,
+  "mean_ndvi": 0.56,
+  "mean_height_osm_m": 6.3,
+  "r_ndvi_lst": -0.67,
+  "r2_regression": 0.54,
+  "apt_minus_priv": {
+   "day": 1.72,
+   "day_ci": [
+    1.27,
+    2.14
+   ],
+   "night": 0.9,
+   "night_ci": [
+    0.56,
+    1.14
+   ],
+   "n_apt": 105,
+   "n_priv": 768
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": -0.005,
+    "lo": -0.175,
+    "hi": 0.164,
+    "p": 0.951,
+    "n": 105
+   },
+   "night": {
+    "beta": 0.416,
+    "lo": 0.243,
+    "hi": 0.589,
+    "p": 0.0,
+    "n": 105
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 105,
+   "priv": 768,
+   "nonres": 102,
+   "aux": 19,
+   "unk": 160
+  },
+  "n_cells": 1284,
+  "notes": "Найменше знімків Landsat (27)."
+ },
+ {
+  "id": "dnipro",
+  "name": "Дніпро",
+  "lon": 35.0462,
+  "lat": 48.4647,
+  "radius_km": 16,
+  "landsat_scenes": 101,
+  "osm_snapshot": "2026-11-13",
+  "osm_tagged_height_pct": 10.7,
+  "built_area_km2": 33.6,
+  "rural_ref_lst_c": 35.54,
+  "mean_lst_built_c": 35.53,
+  "dT_day": -0.02,
+  "dT_day_comparable": false,
+  "dT_night_modis": 1.94,
+  "dT_night_ecostress": 1.27,
+  "ecostress_frames_median": 13,
+  "share_dT_ge6_pct": 2.6,
+  "share_utfvi_bad_pct": 11.5,
+  "mean_ndvi": 0.51,
+  "mean_height_osm_m": 5.8,
+  "r_ndvi_lst": -0.74,
+  "r2_regression": 0.63,
+  "apt_minus_priv": {
+   "day": 1.41,
+   "day_ci": [
+    0.97,
+    1.88
+   ],
+   "night": 1.66,
+   "night_ci": [
+    1.38,
+    1.96
+   ],
+   "n_apt": 137,
+   "n_priv": 873
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": -0.17,
+    "lo": -0.312,
+    "hi": -0.029,
+    "p": 0.018,
+    "n": 137
+   },
+   "night": {
+    "beta": 0.27,
+    "lo": 0.121,
+    "hi": 0.419,
+    "p": 0.0,
+    "n": 137
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 137,
+   "priv": 873,
+   "nonres": 105,
+   "aux": 53,
+   "unk": 307
+  },
+  "n_cells": 1942,
+  "notes": "Сільський еталон такий самий гарячий, як забудова: денну ΔT між містами не порівнювати; нічні показники й регресії коректні."
+ },
+ {
+  "id": "kharkiv",
+  "name": "Харків",
+  "lon": 36.2304,
+  "lat": 49.9935,
+  "radius_km": 17,
+  "landsat_scenes": 54,
+  "osm_snapshot": "2026-11-12",
+  "osm_tagged_height_pct": 50.2,
+  "built_area_km2": 39.6,
+  "rural_ref_lst_c": 32.86,
+  "mean_lst_built_c": 34.61,
+  "dT_day": 1.75,
+  "dT_day_comparable": true,
+  "dT_night_modis": 2.25,
+  "dT_night_ecostress": 1.19,
+  "ecostress_frames_median": 44,
+  "share_dT_ge6_pct": 4.2,
+  "share_utfvi_bad_pct": 9.5,
+  "mean_ndvi": 0.54,
+  "mean_height_osm_m": 6.4,
+  "r_ndvi_lst": -0.72,
+  "r2_regression": 0.55,
+  "apt_minus_priv": {
+   "day": 0.64,
+   "day_ci": [
+    0.25,
+    0.97
+   ],
+   "night": 1.44,
+   "night_ci": [
+    1.22,
+    1.62
+   ],
+   "n_apt": 251,
+   "n_priv": 719
+  },
+  "height_effect_in_apartments": {
+   "day": {
+    "beta": -0.032,
+    "lo": -0.148,
+    "hi": 0.085,
+    "p": 0.594,
+    "n": 251
+   },
+   "night": {
+    "beta": 0.23,
+    "lo": 0.045,
+    "hi": 0.415,
+    "p": 0.015,
+    "n": 251
+   }
+  },
+  "cells_by_dominant_class": {
+   "apt": 251,
+   "priv": 719,
+   "nonres": 109,
+   "aux": 54,
+   "unk": 390
+  },
+  "n_cells": 1920,
+  "notes": "Найкращі дані про висоти (50 % будівель). Частина будівель пошкоджена внаслідок бойових дій; OSM може не відображати цього."
+ }
+]

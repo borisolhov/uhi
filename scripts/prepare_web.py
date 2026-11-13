@@ -36,6 +36,12 @@ from rasterio.warp import Resampling, calculate_default_transform, reproject, tr
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW, OSM, OUT = ROOT / "data/raw", ROOT / "data/osm", ROOT / "web/data"
+# Офіційні показники статті по містах (site_data/cities.json з репозиторію статті), якщо є.
+ARTICLE = ROOT / "data/article/cities_article.json"
+ARTICLE_KEYS = ["radius_km", "landsat_scenes", "ecostress_frames_median", "rural_ref_lst_c", "mean_lst_built_c",
+                "dT_day", "dT_day_comparable", "dT_night_ecostress", "dT_night_modis", "share_utfvi_bad_pct",
+                "share_dT_ge6_pct", "mean_ndvi", "r_ndvi_lst", "apt_minus_priv", "osm_snapshot",
+                "osm_tagged_height_pct", "n_cells", "notes"]
 
 CITIES = {  # порядок = порядок у перемикачі на сайті
     "ivano_frankivsk": "Івано-Франківськ",
@@ -46,16 +52,15 @@ CITIES = {  # порядок = порядок у перемикачі на са�
     "dnipro": "Дніпро",
     "kharkiv": "Харків",
 }
-# Міста, яких немає в статті (додано пізніше) — сайт позначає їх окремо.
-LATER = {"dnipro", "kharkiv"}
+# Міста, денну ΔT яких не можна порівнювати з іншими (еталон дорівнює середній LST забудови).
+DT_DAY_NOT_COMPARABLE = {"dnipro"}
 # Короткі застереження, які сайт показує в картці кварталу й на сторінці порівняння.
 CITY_NOTES = {
-    "dnipro": "Удень забудова Дніпра в середньому не тепліша за степові поля довкола (ΔT близько 0 °C), "
-              "хоча в еталон узято лише ділянки з живою рослинністю (NDVI ≥ 0,3). Уночі острів тепла є. "
-              "Гарячі точки всередині міста найкраще видно на шарі UTFVI. Тип забудови (OpenStreetMap) "
-              "розраховано в радіусі 16 км від центру, тож на околицях кола аналізу (18 км) його немає.",
-    "kharkiv": "Знімки Landsat 2023–2025 бачать пошкоджену й зруйновану забудову, а OpenStreetMap може її "
-               "ще не відображати; окремі квартали можуть виглядати не так, як до 2022 року.",
+    "dnipro": "Заміський еталон Дніпра (степові поля, близько 35,5 °C) такий самий гарячий, як забудова "
+              "в середньому, тому денна ΔT міста близька до нуля. Її не варто порівнювати з іншими містами; "
+              "для Дніпра показовіші нічна ΔT, UTFVI (гарячі точки всередині міста) і різниця між типами забудови.",
+    "kharkiv": "Частина забудови Харкова пошкоджена внаслідок бойових дій: знімки Landsat 2023–2025 це бачать, "
+               "а OpenStreetMap може ще не відображати. Окремі квартали можуть виглядати не так, як до 2022 року.",
 }
 EE_BANDS = ["dt_day", "dt_night", "utfvi", "ndvi", "urban"]        # потрібні смуги з Earth Engine
 OUT_BANDS = ["dt_day", "dt_night", "utfvi", "ndvi", "bld_type", "urban"]
@@ -253,7 +258,7 @@ def process(cid, layers):
         "layers": [k for k in layers if (d / f"{k}.png").exists()],
         "stats": stats,
         "osm": has_osm,
-        "later": cid in LATER,
+        "dt_day_comparable": cid not in DT_DAY_NOT_COMPARABLE,
         "note": CITY_NOTES.get(cid),
     }
 
@@ -270,6 +275,7 @@ def main():
     meta_path = OUT / "cities.json"
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {"cities": []}
     by_id = {c["id"]: c for c in meta["cities"]}
+    article = {a["id"]: a for a in json.loads(ARTICLE.read_text(encoding="utf-8"))} if ARTICLE.exists() else {}
     for cid in ids:
         if not raw_files(cid):
             print(f"⚠ {cid}: немає data/raw/web_{cid}.tif (або _day + _night), пропускаю")
@@ -279,6 +285,11 @@ def main():
         c = by_id[cid]
         print(f"✓ {cid}: {c['grid']['width']}×{c['grid']['height']}, шари: {', '.join(c['layers'])}"
               + ("" if c["osm"] else " (без OSM)"))
+    for cid, c in by_id.items():                 # показники статті — для сторінки порівняння
+        a = article.get(cid)
+        c["article"] = {k: a[k] for k in ARTICLE_KEYS if k in a} if a else None
+        if a and "dT_day_comparable" in a:
+            c["dt_day_comparable"] = bool(a["dT_day_comparable"])
     meta["cities"] = [by_id[c] for c in CITIES if c in by_id]
     meta_path.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
 
