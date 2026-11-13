@@ -8,7 +8,9 @@
                                  (uhi_web_export.js). Смуги читаються за назвами.
   data/osm/<id>_osm_bld.tif    — растр будівель OSM (h_mean, h_tagged, f_built, share_tagged, n_bld)
   data/osm/<id>_osm_cls.tif    — частки класів (share_apt, share_priv, share_nonres, share_aux, share_unk)
-  Файли OSM необов'язкові: без них у міста немає шару «Тип забудови», але сітка тоді не звіряється.
+  Файли OSM необов'язкові: без них у міста немає шару «Тип забудови». Радіус OSM може відрізнятися від
+  радіуса Earth Engine (растри зіставляються цілим зсувом на спільній решітці 100 м); комірки поза
+  зоною OSM мають код 0 у смузі bld_type.
 
 Вихід:
   web/data/<id>/<шар>.png      — кольоровий растр у Web Mercator (EPSG:3857), прозорий там, де немає даних
@@ -50,7 +52,8 @@ LATER = {"dnipro", "kharkiv"}
 CITY_NOTES = {
     "dnipro": "Удень забудова Дніпра в середньому не тепліша за степові поля довкола (ΔT близько 0 °C), "
               "хоча в еталон узято лише ділянки з живою рослинністю (NDVI ≥ 0,3). Уночі острів тепла є. "
-              "Гарячі точки всередині міста найкраще видно на шарі UTFVI.",
+              "Гарячі точки всередині міста найкраще видно на шарі UTFVI. Тип забудови (OpenStreetMap) "
+              "розраховано в радіусі 16 км від центру, тож на околицях кола аналізу (18 км) його немає.",
     "kharkiv": "Знімки Landsat 2023–2025 бачать пошкоджену й зруйновану забудову, а OpenStreetMap може її "
                "ще не відображати; окремі квартали можуть виглядати не так, як до 2022 року.",
 }
@@ -94,15 +97,32 @@ def to_png(v, layer, path):
     Image.fromarray(rgba, "RGBA").save(path, optimize=True)
 
 
-def dominant_type(bld_path, cls_path):
-    """1..5 = класи з layers.json (bld_type), NaN = у комірці немає будівель."""
+def dominant_type(bld_path, cls_path, prof):
+    """Тип забудови в сітці Earth Engine (prof): 1..5 = класи з layers.json (bld_type),
+    NaN = у комірці немає будівель, 0 = комірка поза зоною завантаження OSM.
+    Растр OSM може мати інший радіус, але має лежати на тій самій решітці 100 м тієї ж зони UTM
+    (так будують обидва скрипти); тоді він вставляється в сітку Earth Engine цілим зсувом."""
     with rasterio.open(bld_path) as b, rasterio.open(cls_path) as c:
         assert b.transform == c.transform and b.crs == c.crs, "сітки bld і cls не збігаються"
+        if b.crs != prof["crs"]:
+            raise SystemExit(f"{bld_path.name}: зона UTM {b.crs} не збігається з Earth Engine {prof['crs']}")
+        t, res = prof["transform"], prof["transform"].a
+        dc, dr = (b.transform.c - t.c) / res, (t.f - b.transform.f) / res
+        if abs(dc - round(dc)) > 1e-6 or abs(dr - round(dr)) > 1e-6 or b.transform.a != res:
+            raise SystemExit(f"{bld_path.name}: сітка OSM не лежить на решітці Earth Engine (зсув {dc}, {dr} пікселів)")
+        dc, dr = int(round(dc)), int(round(dr))
         n_bld = b.read(5, masked=True).filled(0)
-        sh = c.read(masked=True).filled(0).astype("float32")     # (5, H, W)
+        sh = c.read(masked=True).filled(0).astype("float32")     # (5, h, w)
     idx = sh.argmax(axis=0) + 1                                   # 1 apt, 2 priv, 3 nonres, 4 aux, 5 unk
-    out = np.where(sh.max(axis=0) >= DOMINANT_MIN, idx, 5).astype("float32")
-    out[n_bld <= 0] = np.nan
+    small = np.where(sh.max(axis=0) >= DOMINANT_MIN, idx, 5).astype("float32")
+    small[n_bld <= 0] = np.nan
+    H, W = prof["height"], prof["width"]
+    out = np.zeros((H, W), dtype="float32")                       # 0 = поза зоною OSM
+    h, w = small.shape
+    r0, c0 = max(dr, 0), max(dc, 0)                               # перетин у координатах сітки EE
+    r1, c1 = min(dr + h, H), min(dc + w, W)
+    if r1 > r0 and c1 > c0:
+        out[r0:r1, c0:c1] = small[r0 - dr:r1 - dr, c0 - dc:c1 - dc]
     return out
 
 
@@ -141,12 +161,7 @@ def load_city(cid):
     bld, cls = OSM / f"{cid}_osm_bld.tif", OSM / f"{cid}_osm_cls.tif"
     has_osm = bld.exists() and cls.exists()
     if has_osm:
-        with rasterio.open(bld) as b:
-            if not same_grid(prof, b.profile):
-                raise SystemExit(f"{cid}: сітка Earth Engine не збігається з {bld.name} "
-                                 f"({prof['crs']} {prof['transform'][2]},{prof['transform'][5]} проти "
-                                 f"{b.crs} {b.transform[2]},{b.transform[5]})")
-        bands["bld_type"] = dominant_type(bld, cls)
+        bands["bld_type"] = dominant_type(bld, cls, prof)
     else:
         bands["bld_type"] = np.full(bands["dt_day"].shape, np.nan, dtype="float32")
     return {k: bands[k] for k in EE_BANDS + ["bld_type"]}, prof, has_osm

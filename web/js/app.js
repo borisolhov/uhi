@@ -187,7 +187,9 @@ function showCell() {
     const i = classIndex(L, x);
     dot.style.background = i >= 0 ? L.colors[i] : 'transparent';
     let val, txt;
-    if (x === null) {
+    if (k === 'bld_type' && x === 0) {
+      val = 'немає даних'; txt = 'квартал поза зоною, для якої завантажено дані OpenStreetMap';
+    } else if (x === null) {
       val = 'немає даних';
       txt = k === 'dt_night' ? 'менше 5 придатних нічних знімків для цього кварталу'
           : k === 'bld_type' ? (state.city.osm === false ? 'дані OpenStreetMap для цього міста ще не оброблено'
@@ -199,6 +201,7 @@ function showCell() {
       val = (k.startsWith('dt_') && x > 0 ? '+' : '') + fmt(x, L.decimals) + (L.unit ? ' ' + L.unit : '');
       txt = L.explain[i] + (L.classnames ? ` (клас «${L.classnames[i]}»)` : '');
     }
+    if (k === 'bld_type' && x === 0) { row.classList.add('empty'); dot.style.background = 'transparent'; }
     row.append(dot, el('span', 'name', L.title), el('span', 'val', val), el('span', 'txt', txt));
     box.append(row);
   }

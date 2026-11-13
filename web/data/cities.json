@@ -511,7 +511,8 @@
     "dt_day",
     "dt_night",
     "utfvi",
-    "ndvi"
+    "ndvi",
+    "bld_type"
    ],
    "stats": {
     "n_urban": 33101,
@@ -532,23 +533,23 @@
      0.0242
     ],
     "share_bld_type": [
-     null,
-     null,
-     null,
-     null,
-     null
+     0.0917,
+     0.6077,
+     0.0575,
+     0.0369,
+     0.2062
     ],
-    "dt_day_apt": null,
-    "dt_night_apt": null,
-    "n_apt": 0,
-    "dt_day_priv": null,
-    "dt_night_priv": null,
-    "n_priv": 0,
+    "dt_day_apt": 0.651,
+    "dt_night_apt": 2.621,
+    "n_apt": 2067,
+    "dt_day_priv": -0.883,
+    "dt_night_priv": 0.887,
+    "n_priv": 13695,
     "r_ndvi_dt_day": -0.744
    },
-   "osm": false,
+   "osm": true,
    "later": true,
-   "note": "Удень забудова Дніпра в середньому не тепліша за степові поля довкола (ΔT близько 0 °C), хоча в еталон узято лише ділянки з живою рослинністю (NDVI ≥ 0,3). Уночі острів тепла є. Гарячі точки всередині міста найкраще видно на шарі UTFVI.",
+   "note": "Удень забудова Дніпра в середньому не тепліша за степові поля довкола (ΔT близько 0 °C), хоча в еталон узято лише ділянки з живою рослинністю (NDVI ≥ 0,3). Уночі острів тепла є. Гарячі точки всередині міста найкраще видно на шарі UTFVI. Тип забудови (OpenStreetMap) розраховано в радіусі 16 км від центру, тож на околицях кола аналізу (18 км) його немає.",
    "synthetic": false
   },
   {
@@ -602,7 +603,8 @@
     "dt_day",
     "dt_night",
     "utfvi",
-    "ndvi"
+    "ndvi",
+    "bld_type"
    ],
    "stats": {
     "n_urban": 30423,
@@ -623,21 +625,21 @@
      0.0085
     ],
     "share_bld_type": [
-     null,
-     null,
-     null,
-     null,
-     null
+     0.1681,
+     0.4978,
+     0.0575,
+     0.0366,
+     0.2401
     ],
-    "dt_day_apt": null,
-    "dt_night_apt": null,
-    "n_apt": 0,
-    "dt_day_priv": null,
-    "dt_night_priv": null,
-    "n_priv": 0,
+    "dt_day_apt": 2.047,
+    "dt_night_apt": 2.152,
+    "n_apt": 3905,
+    "dt_day_priv": 1.495,
+    "dt_night_priv": 0.852,
+    "n_priv": 11564,
     "r_ndvi_dt_day": -0.716
    },
-   "osm": false,
+   "osm": true,
    "later": true,
    "note": "Знімки Landsat 2023–2025 бачать пошкоджену й зруйновану забудову, а OpenStreetMap може її ще не відображати; окремі квартали можуть виглядати не так, як до 2022 року.",
    "synthetic": false
